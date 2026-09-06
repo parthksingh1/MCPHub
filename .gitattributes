@@ -1,0 +1,13 @@
+# Normalise to LF in the repository. Keeps diffs clean across Windows, macOS,
+# and the Linux runners that execute CI and the background workers.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+pnpm-lock.yaml linguist-generated=true
+supabase/migrations/meta/** linguist-generated=true
