@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Suspense } from 'react';
 
+import { AuthNotice } from '@/components/auth-notice';
 import { CommandPalette } from '@/components/command-palette';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { SiteFooter } from '@/components/site-footer';
@@ -83,6 +85,12 @@ export default function RootLayout({
           </div>
 
           <CommandPalette />
+
+          {/* Reads a search param, so it must sit inside a Suspense boundary
+              or every page opts out of static rendering. */}
+          <Suspense fallback={null}>
+            <AuthNotice />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>

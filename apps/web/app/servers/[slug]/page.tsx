@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { InstallCommand } from '@/components/install-command';
+import { ServerActions } from '@/components/server-actions';
 import { ServerCard } from '@/components/server-card';
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Badge } from '@/components/ui/badge';
@@ -196,6 +197,13 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
           <p className="text-text-secondary mt-5 max-w-prose text-lg leading-relaxed">
             {server.description}
           </p>
+
+          <ServerActions
+            slug={server.slug}
+            ratingAvg={Number(server.ratingAvg)}
+            ratingCount={server.ratingCount}
+            className="mt-6"
+          />
 
           <h2 className="text-text-muted mt-10 text-sm font-medium uppercase tracking-wide">
             Install

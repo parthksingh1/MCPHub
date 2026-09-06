@@ -162,6 +162,12 @@ export function SiteHeader(): React.JSX.Element {
             >
               Submit a server
             </Link>
+
+            {/* The header control is hidden below `sm`, so without this there
+                is no way to sign in on a phone at all. */}
+            <div className="mt-3 border-t pt-3">
+              <AuthButton variant="full" />
+            </div>
           </div>
         </nav>
       )}
