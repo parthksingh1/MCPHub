@@ -7,7 +7,21 @@ import {
   type ServerQuery,
   type SiteStats,
 } from '@mcphub/shared';
-import { and, arrayOverlaps, asc, desc, eq, gte, ilike, ne, or, sql, type SQL } from 'drizzle-orm';
+import {
+  and,
+  arrayOverlaps,
+  asc,
+  desc,
+  eq,
+  gt,
+  gte,
+  ilike,
+  isNotNull,
+  ne,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
 
 /** The column set returned for cards, lists, and search results. */
 const summaryColumns = {
@@ -25,6 +39,7 @@ const summaryColumns = {
   githubStars: servers.githubStars,
   lastCommitAt: servers.lastCommitAt,
   trustTotal: servers.trustTotal,
+  trustPrevious: servers.trustPrevious,
   ratingAvg: servers.ratingAvg,
   ratingCount: servers.ratingCount,
   featured: servers.featured,
@@ -317,6 +332,35 @@ export async function getTopServers(limit = 6): Promise<ServerSummaryRow[]> {
     .from(servers)
     .where(eq(servers.deprecated, false))
     .orderBy(desc(servers.trustTotal), desc(servers.githubStars))
+    .limit(limit);
+}
+
+/**
+ * Servers whose Trust Score moved up the most recently.
+ *
+ * Movement is what makes a leaderboard worth revisiting — a static ranking is
+ * checked once. Restricted to genuine rises within the window: a server that
+ * dropped is not something to celebrate on the homepage, and one whose score
+ * has never moved has no story to tell.
+ */
+export async function getTrendingServers(limit = 6, withinDays = 7): Promise<ServerSummaryRow[]> {
+  const db = getDatabase();
+  const since = new Date(Date.now() - withinDays * 86_400_000);
+
+  const delta = sql<number>`(${servers.trustTotal} - ${servers.trustPrevious})`;
+
+  return db
+    .select(summaryColumns)
+    .from(servers)
+    .where(
+      and(
+        eq(servers.deprecated, false),
+        isNotNull(servers.trustPrevious),
+        gte(servers.trustPreviousAt, since),
+        gt(delta, 0),
+      ),
+    )
+    .orderBy(desc(delta), desc(servers.trustTotal))
     .limit(limit);
 }
 

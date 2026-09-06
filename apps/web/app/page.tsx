@@ -31,6 +31,7 @@ import {
   getRecentServers,
   getSiteStats,
   getTopServers,
+  getTrendingServers,
 } from '@/lib/queries/servers';
 import { safeQuery } from '@/lib/safe-query';
 
@@ -130,7 +131,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     lastIndexedAt: null,
   };
 
-  const [stats, categories, featured, recent] = await Promise.all([
+  const [stats, categories, featured, recent, trending] = await Promise.all([
     safeQuery('stats', emptyStats, () =>
       cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
     ),
@@ -147,6 +148,9 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     ),
     safeQuery('recent', [], () =>
       cached(cacheKey('recent'), { ttl: CACHE_TTL.list }, () => getRecentServers(6)),
+    ),
+    safeQuery('trending', [], () =>
+      cached(cacheKey('trending'), { ttl: CACHE_TTL.list }, () => getTrendingServers(6)),
     ),
   ]);
 
@@ -334,6 +338,25 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           </div>
         </div>
       </section>
+
+      {/* ── Trending ─────────────────────────────────────────────────────── */}
+      {trending.length > 0 && (
+        <section className="container py-16">
+          <SectionHeading
+            eyebrow="Biggest movers"
+            title="Trending this week"
+            detail="Servers whose Trust Score rose the most in the last seven days."
+            href="/servers?sort=trust"
+            linkLabel="View all"
+          />
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {trending.map((server, index) => (
+              <ServerCard key={server.id} server={server} index={index} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Recently added ───────────────────────────────────────────────── */}
       {recent.length > 0 && (

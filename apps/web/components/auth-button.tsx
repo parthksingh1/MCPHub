@@ -121,7 +121,7 @@ export function AuthButton({
         onClick={signIn}
         disabled={busy}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium',
+          'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium',
           'transition-all duration-200 ease-out active:scale-[0.98] disabled:opacity-50',
           variant === 'compact'
             ? 'bg-surface hover:border-hover hover:bg-surface-hover h-8 border px-3'

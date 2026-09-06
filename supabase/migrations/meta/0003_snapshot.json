@@ -1,6 +1,6 @@
 {
-  "id": "9fce2be1-eafd-4724-b1a3-bd53d99ddb5d",
-  "prevId": "035eff4b-4546-4551-9704-5773b980c976",
+  "id": "5777602d-631e-40d5-9b72-72a4382b54a2",
+  "prevId": "9fce2be1-eafd-4724-b1a3-bd53d99ddb5d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -617,6 +617,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "trust_previous": {
+          "name": "trust_previous",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trust_previous_at": {
+          "name": "trust_previous_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "live_status": {
           "name": "live_status",
           "type": "jsonb",
@@ -755,6 +767,27 @@
           "columns": [
             {
               "expression": "updated_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "servers_trust_delta_idx": {
+          "name": "servers_trust_delta_idx",
+          "columns": [
+            {
+              "expression": "trust_previous_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            },
+            {
+              "expression": "trust_total",
               "isExpression": false,
               "asc": false,
               "nulls": "last"

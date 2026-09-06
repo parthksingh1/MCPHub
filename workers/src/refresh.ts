@@ -45,6 +45,9 @@ await runWorker('refresh', async ({ db, log }) => {
       githubForks: servers.githubForks,
       githubIssues: servers.githubIssues,
       lastCommitAt: servers.lastCommitAt,
+      trustTotal: servers.trustTotal,
+      trustPrevious: servers.trustPrevious,
+      trustPreviousAt: servers.trustPreviousAt,
       trustSecurity: servers.trustSecurity,
       // Quality signals live in the file tree, which changes rarely. Rather
       // than re-walking every tree daily, the stored component is carried
@@ -115,6 +118,13 @@ await runWorker('refresh', async ({ db, log }) => {
         };
 
         const trust = computeTrustScore(scoringInput);
+        const newTotal =
+          trust.maintenance + trust.popularity + row.trustSecurity + row.trustQuality;
+
+        // Snapshot the old score only when it actually moved. Overwriting it
+        // on every run — including the many where nothing changed — would
+        // erase the baseline and make every delta read as zero.
+        const scoreMoved = newTotal !== row.trustTotal;
 
         await db
           .update(servers)
@@ -132,7 +142,9 @@ await runWorker('refresh', async ({ db, log }) => {
             trustPopularity: trust.popularity,
             trustSecurity: row.trustSecurity,
             trustQuality: row.trustQuality,
-            trustTotal: trust.maintenance + trust.popularity + row.trustSecurity + row.trustQuality,
+            trustTotal: newTotal,
+            trustPrevious: scoreMoved ? row.trustTotal : row.trustPrevious,
+            trustPreviousAt: scoreMoved ? new Date() : row.trustPreviousAt,
             trustComputedAt: new Date(),
           })
           .where(eq(servers.id, row.id));

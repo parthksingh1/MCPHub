@@ -94,7 +94,7 @@ export function SiteHeader(): React.JSX.Element {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-1">
           <button
             type="button"
             onClick={openPalette}
@@ -120,7 +120,7 @@ export function SiteHeader(): React.JSX.Element {
 
           <ThemeToggle />
 
-          <AuthButton className="hidden sm:block" />
+          <AuthButton className="hidden sm:inline-flex" />
 
           <a
             href={REPO_URL}

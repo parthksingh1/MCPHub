@@ -16,6 +16,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { BadgeCta } from '@/components/badge-cta';
 import { InstallCommand } from '@/components/install-command';
 import { ServerActions } from '@/components/server-actions';
 import { ServerCard } from '@/components/server-card';
@@ -24,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { cacheKey, cached } from '@/lib/cache';
 import { formatCount, formatDate, formatLicense, formatRelativeTime } from '@/lib/format';
 import { getRelatedServers, getServerBySlug } from '@/lib/queries/servers';
+import { SITE_URL } from '@/lib/site';
 
 /**
  * Five minutes. This page is roughly 90% of MCPHub's traffic, so its ISR
@@ -324,6 +326,14 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
               </Link>
             </div>
           </section>
+
+          <BadgeCta
+            slug={server.slug}
+            name={server.name}
+            trustTotal={server.trustTotal}
+            siteUrl={SITE_URL}
+            className="mt-10"
+          />
         </div>
 
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}

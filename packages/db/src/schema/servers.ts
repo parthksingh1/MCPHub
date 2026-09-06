@@ -100,6 +100,13 @@ export const servers = pgTable(
     trustQuality: integer('trust_quality').default(0).notNull(),
     trustComputedAt: timestamp('trust_computed_at', { withTimezone: true }),
 
+    // The previous total and when it was superseded. Two columns rather than a
+    // history table: the only question the product asks is "how much did this
+    // move recently", and answering it from the row itself keeps the trending
+    // query a plain indexed scan instead of a self-join over a growing log.
+    trustPrevious: integer('trust_previous'),
+    trustPreviousAt: timestamp('trust_previous_at', { withTimezone: true }),
+
     // Liveness for remotely hosted servers, checked hourly.
     liveStatus: jsonb('live_status').$type<LiveStatus>(),
 
@@ -134,6 +141,8 @@ export const servers = pgTable(
     index('servers_trust_total_idx').on(table.trustTotal.desc()),
     index('servers_github_stars_idx').on(table.githubStars.desc()),
     index('servers_updated_at_idx').on(table.updatedAt.desc()),
+    // Supports the "biggest movers" query without a sort over the whole table.
+    index('servers_trust_delta_idx').on(table.trustPreviousAt.desc(), table.trustTotal.desc()),
     index('servers_categories_idx').using('gin', table.categories),
     index('servers_search_vector_idx').using('gin', table.searchVector),
   ],

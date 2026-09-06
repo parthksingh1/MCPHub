@@ -22,6 +22,13 @@
       "when": 1788688126709,
       "tag": "0002_rating_aggregates",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788728516142,
+      "tag": "0003_trust_history",
+      "breakpoints": true
     }
   ]
 }
