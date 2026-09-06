@@ -15,51 +15,66 @@
 
     --background: 240 20% 99%; /* #fcfcfd */
     --surface: 0 0% 100%; /* #ffffff */
-    --surface-hover: 240 5% 96%; /* #f4f4f5 */
+    --surface-hover: 240 5% 97%;
 
-    --text-primary: 240 5% 4%; /* #0a0a0b */
-    --text-primary-raw: #0a0a0b;
-    --text-secondary: rgb(10 10 11 / 0.7);
-    --text-muted: rgb(10 10 11 / 0.45);
+    --text-primary: 240 6% 6%;
+    --text-primary-raw: #0c0c0f;
+    --text-secondary: rgb(12 12 15 / 0.66);
+    --text-muted: rgb(12 12 15 / 0.42);
 
-    --border: rgb(10 10 11 / 0.09);
-    --border-hover: rgb(10 10 11 / 0.16);
+    --border: rgb(12 12 15 / 0.08);
+    --border-hover: rgb(12 12 15 / 0.16);
 
-    --accent: 263 83% 58%; /* #7c3aed violet */
-    --accent-to: 217 91% 60%; /* #3b82f6 blue */
+    --accent: 263 83% 55%; /* violet */
+    --accent-to: 217 91% 55%; /* blue */
     --accent-foreground: 0 0% 100%;
 
-    --success: 160 84% 39%; /* #10b981 */
-    --warn: 38 92% 50%; /* #f59e0b */
-    --danger: 350 89% 60%; /* #f43f5e */
+    --success: 160 84% 34%;
+    --warn: 33 92% 44%;
+    --danger: 350 82% 52%;
 
-    --noise-opacity: 0;
+    /* Ambient light: a wash of accent behind the page, barely perceptible. */
+    --glow-a: 263 83% 55%;
+    --glow-b: 217 91% 55%;
+    --glow-strength: 0.07;
+
+    /* Hairline grid drawn behind everything. */
+    --grid-line: rgb(12 12 15 / 0.045);
+    --grid-size: 64px;
+
+    --noise-opacity: 0.015;
   }
 
   .dark {
     color-scheme: dark;
 
-    --background: 240 5% 4%; /* #0a0a0b */
-    --surface: 240 8% 8%; /* #121215 */
-    --surface-hover: 240 7% 11%; /* #1a1a1e */
+    --background: 240 8% 4%; /* #0a0a0b */
+    --surface: 240 9% 7%;
+    --surface-hover: 240 8% 10%;
 
     --text-primary: 0 0% 100%;
     --text-primary-raw: #ffffff;
-    --text-secondary: rgb(255 255 255 / 0.7);
-    --text-muted: rgb(255 255 255 / 0.4);
+    --text-secondary: rgb(255 255 255 / 0.68);
+    --text-muted: rgb(255 255 255 / 0.42);
 
-    --border: rgb(255 255 255 / 0.08);
-    --border-hover: rgb(255 255 255 / 0.14);
+    --border: rgb(255 255 255 / 0.07);
+    --border-hover: rgb(255 255 255 / 0.16);
 
-    --accent: 263 83% 62%;
-    --accent-to: 217 91% 62%;
+    --accent: 263 85% 66%;
+    --accent-to: 214 95% 66%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 160 84% 42%;
-    --warn: 38 92% 55%;
-    --danger: 350 89% 63%;
+    --success: 152 68% 50%;
+    --warn: 38 95% 60%;
+    --danger: 350 90% 66%;
 
-    --noise-opacity: 0.02;
+    --glow-a: 266 90% 60%;
+    --glow-b: 214 95% 58%;
+    --glow-strength: 0.16;
+
+    --grid-line: rgb(255 255 255 / 0.032);
+
+    --noise-opacity: 0.025;
   }
 
   * {
@@ -68,13 +83,17 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings:
       'ss01' on,
-      'cv01' on;
+      'cv01' on,
+      'cv11' on;
+    /* Optical sizing keeps Geist's display weights from looking mushy. */
+    font-optical-sizing: auto;
   }
 
   /* A single, unambiguous focus treatment across the whole app. */
@@ -83,16 +102,59 @@
   }
 
   ::selection {
-    @apply bg-accent/30;
+    @apply bg-accent/25;
+  }
+
+  /* Restrained, on-brand scrollbars rather than the OS default. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-hover) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-hover);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
   }
 }
 
 @layer components {
   /*
-   * 2% film grain over the background. Pure CSS + inline SVG turbulence —
-   * no image request, no layout cost, invisible to the accessibility tree.
+   * ── Page atmosphere ───────────────────────────────────────────────────────
+   *
+   * Three stacked, fixed layers behind the content: a hairline grid, two soft
+   * accent glows, and film grain. Each is nearly invisible on its own; together
+   * they stop a near-black page reading as flat dead space, which is the single
+   * biggest difference between a default dark theme and a considered one.
+   *
+   * All of it is CSS — no images, no requests, no layout cost.
    */
-  .noise-overlay::before {
+  .atmosphere::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    /* Fade the grid out towards the edges so it frames rather than wallpapers. */
+    mask-image: radial-gradient(ellipse 100% 70% at 50% 0%, black 30%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse 100% 70% at 50% 0%, black 30%, transparent 78%);
+  }
+
+  .atmosphere::after {
     content: '';
     position: fixed;
     inset: 0;
@@ -102,20 +164,190 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* Violet → blue text gradient, used sparingly on hero words only. */
+  /** The ambient colour wash. Sits between grid and content. */
+  .aurora {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    height: 780px;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        620px 380px at 22% 0%,
+        hsl(var(--glow-a) / var(--glow-strength)),
+        transparent 70%
+      ),
+      radial-gradient(
+        640px 400px at 78% 8%,
+        hsl(var(--glow-b) / calc(var(--glow-strength) * 0.8)),
+        transparent 70%
+      );
+  }
+
+  /*
+   * ── Gradient hairline border ──────────────────────────────────────────────
+   *
+   * A 1px border that fades from accent to transparent, drawn with a masked
+   * pseudo-element. `border-image` cannot do rounded corners and an inset
+   * box-shadow cannot do a gradient, so the mask compositing trick is the only
+   * way to get this without an extra wrapper element.
+   */
+  .gradient-border {
+    position: relative;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--accent) / 0.55),
+      hsl(var(--accent-to) / 0.28) 42%,
+      transparent 72%
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    opacity: 0;
+    transition: opacity 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .gradient-border:hover::before,
+  .gradient-border:focus-visible::before {
+    opacity: 1;
+  }
+
+  /** Violet → blue text gradient, used sparingly on hero words only. */
   .text-gradient {
-    @apply from-accent-from to-accent-to bg-gradient-to-r bg-clip-text text-transparent;
+    @apply from-accent-from to-accent-to bg-gradient-to-br bg-clip-text text-transparent;
+    /* Slight overshoot stops the descenders clipping in some browsers. */
+    padding-bottom: 0.06em;
+  }
+
+  /** A monospace eyebrow label above a section heading. */
+  .eyebrow {
+    @apply text-text-muted font-mono text-[11px] uppercase tracking-[0.18em];
+  }
+
+  /**
+   * A hairline that fades at both ends. Used as a section divider where a
+   * full-width rule would feel heavy.
+   */
+  .rule-fade {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-hover), transparent);
+  }
+
+  /** Frosted panel, for anything floating above the page. */
+  .panel {
+    @apply bg-surface/80 border backdrop-blur-xl;
+  }
+
+  /*
+   * ── Form controls ─────────────────────────────────────────────────────────
+   *
+   * Native range inputs and checkboxes are the fastest way to make an
+   * otherwise considered dark interface look unfinished: the OS renders them
+   * in its own light-mode chrome regardless of the surrounding design.
+   */
+  .range-accent {
+    @apply h-1.5 w-full cursor-pointer appearance-none bg-transparent;
+  }
+
+  .range-accent::-webkit-slider-runnable-track {
+    @apply h-1.5 rounded-full;
+    background: var(--border-hover);
+  }
+
+  .range-accent::-webkit-slider-thumb {
+    @apply size-4 appearance-none rounded-full border-2;
+    margin-top: -5px;
+    background: hsl(var(--accent));
+    border-color: hsl(var(--background));
+    box-shadow:
+      0 0 0 1px hsl(var(--accent) / 0.4),
+      0 2px 6px rgb(0 0 0 / 0.4);
+    transition: transform 150ms ease-out;
+  }
+
+  .range-accent::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+
+  .range-accent::-moz-range-track {
+    @apply h-1.5 rounded-full;
+    background: var(--border-hover);
+  }
+
+  .range-accent::-moz-range-thumb {
+    @apply size-4 rounded-full border-2;
+    background: hsl(var(--accent));
+    border-color: hsl(var(--background));
+  }
+
+  .checkbox-accent {
+    @apply relative size-4 shrink-0 cursor-pointer appearance-none rounded border transition-all duration-150;
+    background: hsl(var(--surface));
+  }
+
+  .checkbox-accent:hover {
+    border-color: var(--border-hover);
+  }
+
+  .checkbox-accent:checked {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--accent));
+  }
+
+  /* The tick is drawn rather than an image, so it inherits crisp rendering
+     at every device pixel ratio. */
+  .checkbox-accent:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid hsl(var(--accent-foreground));
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+}
+
+@layer utilities {
+  /** Tighter display tracking than Tailwind's `tracking-tighter`. */
+  .tracking-display {
+    letter-spacing: -0.038em;
+  }
+
+  /** Removes the atmosphere from a subtree (used inside cards). */
+  .no-atmosphere::before,
+  .no-atmosphere::after {
+    display: none;
   }
 }
 
 /* Motion is decoration. Anyone who opts out gets none of it. */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }

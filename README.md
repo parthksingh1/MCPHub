@@ -20,6 +20,24 @@ you can find one and install it into Claude Desktop, Claude Code, Cursor,
 Cline, Windsurf, or VS Code with a single copied command — and know what you
 are running first.
 
+## Screenshots
+
+<div align="center">
+
+|                                                |                                                         |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| ![Home](./docs/screenshots/home-dark.png)      | ![Browse](./docs/screenshots/browse-light.png)          |
+| **Home** — live counts, no hard-coded numbers  | **Browse** — URL-synced filters, light mode             |
+| ![Detail](./docs/screenshots/detail-dark.png)  | ![Palette](./docs/screenshots/command-palette-dark.png) |
+| **Server detail** — install command per client | **⌘K palette** — Postgres full-text search              |
+
+</div>
+
+Every screenshot is captured from real indexed data by
+[`e2e/screenshots.spec.ts`](./apps/web/e2e/screenshots.spec.ts) — run
+`pnpm --filter @mcphub/web screenshots` to regenerate them. Both themes are
+captured; see [`docs/screenshots/`](./docs/screenshots) for all fourteen.
+
 ## Why it exists
 
 An MCP server runs on your machine, with your permissions, acting on
@@ -130,6 +148,7 @@ in about 45 minutes.
 - [x] Browse, detail, category, compare, and submit pages
 - [x] Embeddable Trust Score badges
 - [x] SEO: sitemap, JSON-LD, per-category landing pages
+- [x] Playwright E2E across the five critical flows
 - [ ] `npx mcphub` CLI
 - [ ] Weekly digest email
 - [ ] Auto-generated `awesome-mcp` repository

@@ -1,11 +1,30 @@
 import { CACHE_TTL, CATEGORY_LABELS, type Category } from '@mcphub/shared';
-import { ArrowRight, Clock, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
+import {
+  ArrowRight,
+  Boxes,
+  Braces,
+  Cloud,
+  CreditCard,
+  Database,
+  FileText,
+  Globe,
+  LineChart,
+  MessageSquare,
+  Palette,
+  Rocket,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Terminal,
+  Wrench,
+} from 'lucide-react';
 import Link from 'next/link';
 
+import { HeroPanel } from '@/components/hero-panel';
 import { ServerCard } from '@/components/server-card';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
-import { formatCount, formatRelativeTime } from '@/lib/format';
+import { formatRelativeTime } from '@/lib/format';
 import {
   getCategoryCounts,
   getFeaturedServers,
@@ -19,38 +38,81 @@ import { safeQuery } from '@/lib/safe-query';
 export const revalidate = 60;
 
 /** Icons for the category grid, keyed by category slug. */
-const CATEGORY_EMOJI: Record<Category, string> = {
-  database: '🗄️',
-  browser: '🌐',
-  communication: '💬',
-  devtools: '🛠️',
-  devops: '🚀',
-  ai: '🧠',
-  productivity: '📋',
-  files: '📁',
-  search: '🔍',
-  finance: '💳',
-  cloud: '☁️',
-  security: '🔒',
-  monitoring: '📊',
-  design: '🎨',
-  data: '📈',
-  other: '✨',
+const CATEGORY_ICON: Record<Category, typeof Database> = {
+  database: Database,
+  browser: Globe,
+  communication: MessageSquare,
+  devtools: Wrench,
+  devops: Rocket,
+  ai: Sparkles,
+  productivity: FileText,
+  files: Boxes,
+  search: Search,
+  finance: CreditCard,
+  cloud: Cloud,
+  security: ShieldCheck,
+  monitoring: LineChart,
+  design: Palette,
+  data: Braces,
+  other: Terminal,
 };
 
 /** The four Trust Score components, for the explainer strip. */
 const TRUST_PARTS = [
   {
     name: 'Maintenance',
-    detail: 'Recent commits and releases — is anyone still looking after it?',
+    detail: 'Commit and release recency. Is anyone still looking after it?',
   },
   {
     name: 'Popularity',
-    detail: 'Stars and downloads, on a log scale so small projects still register.',
+    detail: 'Stars on a log scale, so small projects still register.',
   },
-  { name: 'Security', detail: 'Static analysis for MCP-specific risks, plus a dependency audit.' },
-  { name: 'Quality', detail: 'README, licence, types, tests, and CI — the marks of careful work.' },
+  {
+    name: 'Security',
+    detail: 'A purpose-built Semgrep ruleset, plus a dependency audit.',
+  },
+  {
+    name: 'Quality',
+    detail: 'README, licence, types, tests, CI — the marks of care.',
+  },
 ] as const;
+
+/** A monospace eyebrow above a section heading. */
+function SectionHeading({
+  eyebrow,
+  title,
+  detail,
+  href,
+  linkLabel,
+}: {
+  eyebrow: string;
+  title: string;
+  detail: string;
+  href?: string;
+  linkLabel?: string;
+}): React.JSX.Element {
+  return (
+    <div className="flex items-end justify-between gap-6">
+      <div>
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 className="text-section-title mt-2 font-semibold">{title}</h2>
+        <p className="text-text-muted mt-1.5 text-sm">{detail}</p>
+      </div>
+      {href && linkLabel && (
+        <Link
+          href={href}
+          className="text-text-muted hover:text-foreground group hidden shrink-0 items-center gap-1 text-sm transition-colors sm:inline-flex"
+        >
+          {linkLabel}
+          <ArrowRight
+            className="size-3.5 transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </Link>
+      )}
+    </div>
+  );
+}
 
 /**
  * The homepage.
@@ -91,82 +153,100 @@ export default async function HomePage(): Promise<React.JSX.Element> {
   const topCategories = [...categories].sort((a, b) => b.count - a.count).slice(0, 8);
 
   return (
-    <main>
+    <main className="relative">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="container pb-16 pt-20 sm:pt-28">
-        <h1 className="text-display max-w-[15ch] font-semibold">
-          The trusted directory for <span className="text-gradient">MCP servers</span>.
-        </h1>
-
-        <p className="text-text-secondary mt-6 max-w-prose text-lg leading-relaxed">
-          Smithery lists them. MCPHub rates, scans, and vets them. Every server is scored on
-          maintenance, popularity, security, and quality — so you know what you are installing
-          before you run it.
-        </p>
-
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Button asChild size="lg">
-            <Link href="/servers">
-              Browse {formatCount(stats.totalServers)} servers
-              <ArrowRight className="size-4" />
+      <section className="container relative pb-14 pt-14 sm:pt-20">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
+          <div className="animate-fade-up">
+            {/* Live status pill — proof the index is alive, above the fold. */}
+            <Link
+              href="/servers?sort=recent"
+              className="panel text-text-secondary hover:border-hover group inline-flex items-center gap-2 rounded-full py-1 pl-1.5 pr-3 text-xs transition-colors"
+            >
+              <span className="relative flex size-4 items-center justify-center">
+                <span className="bg-success/40 animate-pulse-ring absolute size-2 rounded-full" />
+                <span className="bg-success relative size-1.5 rounded-full" />
+              </span>
+              <span className="tabular-nums">{stats.totalServers} servers indexed</span>
+              <span className="text-text-muted" aria-hidden>
+                ·
+              </span>
+              <span className="text-text-muted">
+                updated {formatRelativeTime(stats.lastIndexedAt)}
+              </span>
             </Link>
-          </Button>
-          <Button asChild size="lg" variant="secondary">
-            <Link href="/submit">Submit yours</Link>
-          </Button>
-        </div>
 
-        <dl className="text-text-muted mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <div className="flex items-center gap-1.5">
-            <dt className="sr-only">Servers indexed</dt>
-            <dd className="text-text-secondary font-medium tabular-nums">{stats.totalServers}</dd>
-            <span>servers</span>
+            <h1 className="text-display tracking-display mt-7 max-w-[13ch] text-balance">
+              The trusted directory for{' '}
+              <span className="text-gradient animate-gradient-drift bg-[length:200%_auto]">
+                MCP servers
+              </span>
+              .
+            </h1>
+
+            <p className="text-text-secondary mt-6 max-w-[46ch] text-lg leading-relaxed">
+              Smithery lists them. MCPHub rates, scans, and vets them — so you know exactly what you
+              are installing before you run it.
+            </p>
+
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Button asChild size="lg">
+                <Link href="/servers">
+                  Browse {stats.totalServers} servers
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/submit">Submit yours</Link>
+              </Button>
+            </div>
+
+            <dl className="text-text-muted mt-9 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm">
+              {[
+                { label: 'servers', value: stats.totalServers },
+                { label: 'categories', value: stats.totalCategories },
+                { label: 'clients', value: stats.totalClients },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-baseline gap-1.5">
+                  <dt className="sr-only">{stat.label}</dt>
+                  <dd className="text-foreground font-mono text-xl font-medium tabular-nums tracking-tight">
+                    {stat.value}
+                  </dd>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
+            </dl>
           </div>
-          <span aria-hidden>·</span>
-          <div className="flex items-center gap-1.5">
-            <dt className="sr-only">Categories</dt>
-            <dd className="text-text-secondary font-medium tabular-nums">
-              {stats.totalCategories}
-            </dd>
-            <span>categories</span>
-          </div>
-          <span aria-hidden>·</span>
-          <div className="flex items-center gap-1.5">
-            <dt className="sr-only">Supported clients</dt>
-            <dd className="text-text-secondary font-medium tabular-nums">{stats.totalClients}</dd>
-            <span>clients</span>
-          </div>
-          <span aria-hidden>·</span>
-          <div className="flex items-center gap-1.5">
-            <Clock className="size-3.5" aria-hidden />
-            <dt className="sr-only">Last updated</dt>
-            <dd>updated {formatRelativeTime(stats.lastIndexedAt)}</dd>
-          </div>
-        </dl>
+
+          {featured.length > 0 && (
+            <HeroPanel
+              servers={featured.map((server) => ({
+                slug: server.slug,
+                name: server.name,
+                authorName: server.authorName,
+                trustTotal: server.trustTotal,
+              }))}
+            />
+          )}
+        </div>
       </section>
 
-      {/* ── Featured ─────────────────────────────────────────────────────── */}
-      {featured.length > 0 && (
-        <section className="container py-12">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-                <Sparkles className="text-accent size-4" aria-hidden />
-                Highest rated
-              </h2>
-              <p className="text-text-muted mt-1 text-sm">
-                The servers scoring best across all four Trust Score components.
-              </p>
-            </div>
-            <Link
-              href="/servers?sort=trust"
-              className="text-text-muted hover:text-foreground hidden shrink-0 text-sm transition-colors sm:block"
-            >
-              View all →
-            </Link>
-          </div>
+      <div className="container">
+        <div className="rule-fade" />
+      </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* ── Highest rated ────────────────────────────────────────────────── */}
+      {featured.length > 0 && (
+        <section className="container py-16">
+          <SectionHeading
+            eyebrow="Ranked by Trust Score"
+            title="Highest rated"
+            detail="Scoring best across maintenance, popularity, security, and quality."
+            href="/servers?sort=trust"
+            linkLabel="View all"
+          />
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((server, index) => (
               <ServerCard key={server.id} server={server} index={index} />
             ))}
@@ -175,92 +255,104 @@ export default async function HomePage(): Promise<React.JSX.Element> {
       )}
 
       {/* ── Categories ───────────────────────────────────────────────────── */}
-      <section className="container py-12">
-        <h2 className="text-xl font-semibold tracking-tight">Browse by category</h2>
-        <p className="text-text-muted mt-1 text-sm">Find a server for the tool you already use.</p>
+      <section className="container py-16">
+        <SectionHeading
+          eyebrow="By integration"
+          title="Browse by category"
+          detail="Find a server for the tool you already use."
+          href="/categories"
+          linkLabel="All categories"
+        />
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {topCategories.map((category) => (
-            <Link
-              key={category.slug}
-              href={`/categories/${category.slug}`}
-              className="bg-surface hover:border-hover hover:bg-surface-hover group flex items-center gap-3 rounded-lg border p-4 transition-all duration-200 ease-out hover:-translate-y-0.5"
-            >
-              <span className="text-lg" aria-hidden>
-                {CATEGORY_EMOJI[category.slug]}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium">
-                  {CATEGORY_LABELS[category.slug]}
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {topCategories.map((category) => {
+            const Icon = CATEGORY_ICON[category.slug];
+
+            return (
+              <Link
+                key={category.slug}
+                href={`/categories/${category.slug}`}
+                className="gradient-border bg-surface hover:bg-surface-hover group relative flex items-center gap-3 rounded-xl border p-4 transition-all duration-300 ease-out hover:-translate-y-0.5"
+              >
+                <span className="border-border bg-background text-text-muted group-hover:text-accent flex size-9 shrink-0 items-center justify-center rounded-lg border transition-colors">
+                  <Icon className="size-4" aria-hidden />
                 </span>
-                <span className="text-text-muted block text-xs tabular-nums">
-                  {category.count} servers
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium tracking-tight">
+                    {CATEGORY_LABELS[category.slug]}
+                  </span>
+                  <span className="text-text-muted block font-mono text-[11px] tabular-nums">
+                    {category.count}
+                  </span>
                 </span>
-              </span>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Trust Score explainer ────────────────────────────────────────── */}
+      <section className="container py-16">
+        <div className="panel relative overflow-hidden rounded-2xl p-8 sm:p-12">
+          <div
+            aria-hidden
+            className="from-accent/[0.08] pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-gradient-to-br to-transparent blur-3xl"
+          />
+
+          <div className="relative grid gap-12 lg:grid-cols-[1fr_1.3fr]">
+            <div>
+              <p className="eyebrow">Open algorithm</p>
+              <h2 className="text-section-title mt-2 max-w-[16ch] font-semibold">
+                Every server gets one honest number.
+              </h2>
+              <p className="text-text-secondary mt-4 max-w-prose text-sm leading-relaxed">
+                Four equally weighted components, 25 points each. Deterministic, open source, and
+                covered by tests at 100%. You can read it, run it, and disagree with it.
+              </p>
+              <Button asChild variant="secondary" className="mt-7">
+                <Link href="/trust-score">
+                  Read the full breakdown
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+
+            <dl className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
+              {TRUST_PARTS.map((part, index) => (
+                <div key={part.name}>
+                  <dt className="flex items-baseline gap-2.5">
+                    <span className="text-text-muted font-mono text-[11px] tabular-nums">
+                      0{index + 1}
+                    </span>
+                    <span className="font-medium tracking-tight">{part.name}</span>
+                    <span className="text-text-muted ml-auto font-mono text-[11px]">/25</span>
+                  </dt>
+                  <dd className="text-text-muted mt-2 text-sm leading-relaxed">{part.detail}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
       </section>
 
       {/* ── Recently added ───────────────────────────────────────────────── */}
       {recent.length > 0 && (
-        <section className="container py-12">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-                <TrendingUp className="text-accent size-4" aria-hidden />
-                Recently added
-              </h2>
-              <p className="text-text-muted mt-1 text-sm">The newest servers to reach the index.</p>
-            </div>
-            <Link
-              href="/servers?sort=recent"
-              className="text-text-muted hover:text-foreground hidden shrink-0 text-sm transition-colors sm:block"
-            >
-              View all →
-            </Link>
-          </div>
+        <section className="container pb-8 pt-4">
+          <SectionHeading
+            eyebrow="Fresh from the crawler"
+            title="Recently added"
+            detail="The newest servers to reach the index."
+            href="/servers?sort=recent"
+            linkLabel="View all"
+          />
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recent.map((server, index) => (
               <ServerCard key={server.id} server={server} index={index} />
             ))}
           </div>
         </section>
       )}
-
-      {/* ── Trust Score explainer ────────────────────────────────────────── */}
-      <section className="container py-12">
-        <div className="bg-surface rounded-lg border p-8">
-          <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-            <ShieldCheck className="text-accent size-4" aria-hidden />
-            How the Trust Score works
-          </h2>
-          <p className="text-text-secondary mt-2 max-w-prose text-sm leading-relaxed">
-            Four equally weighted components, 25 points each. The algorithm is open source and
-            deterministic — you can read it, run it, and disagree with it.
-          </p>
-
-          <dl className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {TRUST_PARTS.map((part) => (
-              <div key={part.name}>
-                <dt className="flex items-baseline gap-2 font-medium">
-                  {part.name}
-                  <span className="text-text-muted font-mono text-xs">0–25</span>
-                </dt>
-                <dd className="text-text-muted mt-1.5 text-sm leading-relaxed">{part.detail}</dd>
-              </div>
-            ))}
-          </dl>
-
-          <Button asChild variant="secondary" className="mt-8">
-            <Link href="/trust-score">
-              Read the full breakdown
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-        </div>
-      </section>
     </main>
   );
 }

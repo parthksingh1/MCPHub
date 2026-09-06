@@ -60,7 +60,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body className="noise-overlay min-h-dvh font-sans">
+      <body className="atmosphere min-h-dvh font-sans">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {/* Keyboard users should be able to reach the content without
               tabbing through the whole header on every page. */}
@@ -70,6 +70,9 @@ export default function RootLayout({
           >
             Skip to content
           </a>
+
+          {/* The ambient colour wash sits above the grid, below the content. */}
+          <div className="aurora" aria-hidden />
 
           <div className="relative z-10 flex min-h-dvh flex-col">
             <SiteHeader />

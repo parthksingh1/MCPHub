@@ -100,29 +100,33 @@ export default function TrustScorePage(): React.JSX.Element {
       </div>
 
       {/* Components */}
-      <div className="mt-12 space-y-8">
-        {COMPONENTS.map((component) => (
-          <section key={component.name} className="bg-surface rounded-lg border p-6">
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h2 className="text-xl font-semibold tracking-tight">{component.name}</h2>
-              <span className="text-text-muted font-mono text-xs">0–25 points</span>
+      <div className="mt-12 space-y-6">
+        {COMPONENTS.map((component, index) => (
+          <section key={component.name} className="panel gradient-border rounded-2xl p-6 sm:p-8">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+              <div>
+                <p className="eyebrow">0{index + 1} — 0-25 points</p>
+                <h2 className="text-section-title mt-2 font-semibold">{component.name}</h2>
+                <p className="text-text-secondary mt-2 text-sm">{component.question}</p>
+                <p className="text-text-muted mt-5 max-w-prose border-t pt-5 text-sm leading-relaxed">
+                  {component.why}
+                </p>
+              </div>
+
+              <ul className="space-y-2 self-start rounded-xl border p-4">
+                {component.rules.map((rule) => (
+                  <li
+                    key={rule}
+                    className="text-text-secondary flex gap-2.5 font-mono text-xs leading-relaxed"
+                  >
+                    <span className="text-accent select-none" aria-hidden>
+                      ›
+                    </span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <p className="text-text-secondary mt-1 text-sm">{component.question}</p>
-
-            <ul className="mt-5 space-y-1.5">
-              {component.rules.map((rule) => (
-                <li key={rule} className="text-text-secondary flex gap-2.5 text-sm">
-                  <span className="text-text-muted select-none" aria-hidden>
-                    ·
-                  </span>
-                  <span className="font-mono text-xs leading-relaxed">{rule}</span>
-                </li>
-              ))}
-            </ul>
-
-            <p className="text-text-muted mt-5 max-w-prose border-t pt-4 text-sm leading-relaxed">
-              {component.why}
-            </p>
           </section>
         ))}
       </div>

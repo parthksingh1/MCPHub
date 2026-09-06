@@ -173,7 +173,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
                   type="checkbox"
                   checked={selectedClients.includes(client)}
                   onChange={() => toggleMulti('client', client)}
-                  className="size-3.5 rounded-sm border accent-[hsl(var(--accent))]"
+                  className="checkbox-accent"
                 />
                 {MCP_CLIENT_LABELS[client]}
               </label>
@@ -223,7 +223,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
             onChange={(event) =>
               setSingle('minTrust', event.target.value === '0' ? '' : event.target.value)
             }
-            className="w-full accent-[hsl(var(--accent))]"
+            className="range-accent"
           />
         </div>
 
@@ -237,7 +237,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
               type="checkbox"
               checked={verifiedOnly}
               onChange={() => setSingle('verified', verifiedOnly ? '' : 'true')}
-              className="size-3.5 rounded-sm border accent-[hsl(var(--accent))]"
+              className="checkbox-accent"
             />
             Verified only
           </label>
@@ -246,7 +246,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
               type="checkbox"
               checked={officialOnly}
               onChange={() => setSingle('official', officialOnly ? '' : 'true')}
-              className="size-3.5 rounded-sm border accent-[hsl(var(--accent))]"
+              className="checkbox-accent"
             />
             Official publishers only
           </label>
