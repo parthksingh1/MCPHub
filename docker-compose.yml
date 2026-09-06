@@ -1,0 +1,71 @@
+# Local development stack for MCPHub.
+#
+#   docker compose up -d
+#
+# Provides Postgres 15 plus a Redis instance fronted by an Upstash-compatible
+# REST proxy, so the same @upstash/redis client code runs locally and in
+# production.
+#
+# Stock Postgres, not `supabase/postgres`: that image ships a pre-initialised
+# data directory (so `docker-entrypoint-initdb.d` never runs) and event triggers
+# that require a `supabase_admin` role, which reject DDL from anyone else.
+# `supabase/init/` recreates the parts of the Supabase schema we actually
+# depend on — the `auth` schema, its JWT helpers, and the GoTrue roles.
+#
+# For the *full* Supabase experience (Auth UI, Studio, Storage, Realtime), use
+# the Supabase CLI instead: `supabase start`. This compose file is the lean,
+# fast path for day-to-day work on the app and the workers.
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcphub-postgres
+    restart: unless-stopped
+    ports:
+      - '54322:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./supabase/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: mcphub-redis
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Upstash REST emulator: speaks the Upstash HTTP protocol on top of Redis.
+  redis-rest:
+    image: hiett/serverless-redis-http:latest
+    container_name: mcphub-redis-rest
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - '8079:80'
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: local_dev_token
+      SRH_CONNECTION_STRING: 'redis://redis:6379'
+
+volumes:
+  postgres-data:
+  redis-data:
