@@ -13,6 +13,7 @@ import {
   getSiteStats,
   getTopServers,
 } from '@/lib/queries/servers';
+import { safeQuery } from '@/lib/safe-query';
 
 /** Regenerate at most once a minute; the homepage is mostly aggregate data. */
 export const revalidate = 60;
@@ -59,16 +60,32 @@ const TRUST_PARTS = [
  * the kind of thing MCPHub exists to be the opposite of.
  */
 export default async function HomePage(): Promise<React.JSX.Element> {
+  const emptyStats = {
+    totalServers: 0,
+    verifiedServers: 0,
+    totalCategories: 0,
+    totalClients: 0,
+    lastIndexedAt: null,
+  };
+
   const [stats, categories, featured, recent] = await Promise.all([
-    cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
-    cached(cacheKey('categories'), { ttl: CACHE_TTL.category }, () => getCategoryCounts()),
+    safeQuery('stats', emptyStats, () =>
+      cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
+    ),
+    safeQuery('categories', [], () =>
+      cached(cacheKey('categories'), { ttl: CACHE_TTL.category }, () => getCategoryCounts()),
+    ),
     // Fall back to the highest-scoring servers until an admin has hand-picked
     // any, so a fresh deployment never shows an empty homepage.
-    cached(cacheKey('featured'), { ttl: CACHE_TTL.list }, async () => {
-      const picked = await getFeaturedServers(6);
-      return picked.length >= 3 ? picked : getTopServers(6);
-    }),
-    cached(cacheKey('recent'), { ttl: CACHE_TTL.list }, () => getRecentServers(6)),
+    safeQuery('featured', [], () =>
+      cached(cacheKey('featured'), { ttl: CACHE_TTL.list }, async () => {
+        const picked = await getFeaturedServers(6);
+        return picked.length >= 3 ? picked : getTopServers(6);
+      }),
+    ),
+    safeQuery('recent', [], () =>
+      cached(cacheKey('recent'), { ttl: CACHE_TTL.list }, () => getRecentServers(6)),
+    ),
   ]);
 
   const topCategories = [...categories].sort((a, b) => b.count - a.count).slice(0, 8);
