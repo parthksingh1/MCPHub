@@ -80,7 +80,7 @@ export function HeroPanel({ servers, className }: HeroPanelProps): React.JSX.Ele
             <span className="bg-warn/60 size-2.5 rounded-full" />
             <span className="bg-success/60 size-2.5 rounded-full" />
           </span>
-          <span className="text-text-muted ml-2 font-mono text-[11px]">mcphub.dev — top rated</span>
+          <span className="text-text-muted ml-2 font-mono text-[11px]">top rated — live</span>
         </div>
 
         <ul className="divide-border divide-y">

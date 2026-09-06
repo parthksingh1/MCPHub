@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
+import { REPO_URL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 /** Primary navigation. */
@@ -119,7 +120,7 @@ export function SiteHeader(): React.JSX.Element {
           <ThemeToggle />
 
           <a
-            href="https://github.com/mcphub/mcphub"
+            href={REPO_URL}
             target="_blank"
             rel="noreferrer noopener"
             aria-label="MCPHub on GitHub"

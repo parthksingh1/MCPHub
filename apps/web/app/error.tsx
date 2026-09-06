@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { ISSUES_URL } from '@/lib/site';
 
 /** Props Next.js passes to an error boundary. */
 interface ErrorPageProps {
@@ -51,11 +52,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button onClick={reset}>Try again</Button>
         <Button asChild variant="secondary">
-          <a
-            href="https://github.com/mcphub/mcphub/issues/new"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
+          <a href={ISSUES_URL} target="_blank" rel="noreferrer noopener">
             Report it
           </a>
         </Button>

@@ -1,6 +1,8 @@
 import { CATEGORIES, CATEGORY_LABELS } from '@mcphub/shared';
 import Link from 'next/link';
 
+import { CONTRIBUTING_URL, REPO_URL } from '@/lib/site';
+
 /** Footer link groups, kept declarative so the layout stays symmetrical. */
 const SECTIONS = [
   {
@@ -24,16 +26,12 @@ const SECTIONS = [
   {
     title: 'Project',
     links: [
-      { label: 'GitHub', href: 'https://github.com/mcphub/mcphub', external: true },
-      {
-        label: 'Contributing',
-        href: 'https://github.com/mcphub/mcphub/blob/main/CONTRIBUTING.md',
-        external: true,
-      },
+      { label: 'GitHub', href: REPO_URL, external: true },
+      { label: 'Contributing', href: CONTRIBUTING_URL, external: true },
       { label: 'Model Context Protocol', href: 'https://modelcontextprotocol.io', external: true },
     ],
   },
-] as const;
+];
 
 /** Site-wide footer with the full information architecture. */
 export function SiteFooter(): React.JSX.Element {

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { TrustScoreRing } from '@/components/trust-score-ring';
+import { ISSUES_URL, SCORING_SRC_URL } from '@/lib/site';
 
 export const revalidate = 86_400;
 
@@ -164,7 +165,7 @@ export default function TrustScorePage(): React.JSX.Element {
         <p className="text-text-muted mt-6 text-sm">
           The implementation lives in{' '}
           <a
-            href="https://github.com/mcphub/mcphub/tree/main/packages/scoring"
+            href={SCORING_SRC_URL}
             target="_blank"
             rel="noreferrer noopener"
             className="text-accent underline underline-offset-2"
@@ -173,7 +174,7 @@ export default function TrustScorePage(): React.JSX.Element {
           </a>
           , with full test coverage. Think a weight is wrong?{' '}
           <a
-            href="https://github.com/mcphub/mcphub/issues/new"
+            href={ISSUES_URL}
             target="_blank"
             rel="noreferrer noopener"
             className="text-accent underline underline-offset-2"
