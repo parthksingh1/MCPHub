@@ -12,7 +12,7 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "clean": "rimraf .turbo dist *.tsbuildinfo"
   },
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8"
   }
 }

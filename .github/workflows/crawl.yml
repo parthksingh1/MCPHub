@@ -1,0 +1,74 @@
+name: Crawl
+
+on:
+  schedule:
+    # 02:00 UTC daily — discovery of newly published MCP servers.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      maxEnrich:
+        description: 'Cap servers enriched this run (0 = no cap)'
+        required: false
+        default: '0'
+
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # A dedicated PAT gets 5,000 requests/hour. `github.token` is the fallback
+      # so the workflow still runs in a fork, just far more slowly.
+      GITHUB_TOKEN: ${{ secrets.CRAWLER_GITHUB_TOKEN || github.token }}
+      MAX_ENRICH: ${{ inputs.maxEnrich || '0' }}
+      LAUNCH_MODE: ${{ vars.LAUNCH_MODE || 'false' }}
+      # Surfaced as env because the `secrets` context is not available inside a
+      # step-level `if:` condition.
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ETags let unchanged repositories return 304, which GitHub does not count
+      # against the rate limit. Carrying this cache between runs is what makes a
+      # daily full-catalogue pass affordable.
+      - name: Restore GitHub ETag cache
+        uses: actions/cache/restore@v4
+        with:
+          path: workers/.cache
+          key: github-etags-crawl-${{ github.run_id }}
+          restore-keys: github-etags-crawl-
+
+      - name: Crawl
+        working-directory: workers
+        run: pnpm crawl
+
+      - name: Save GitHub ETag cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: workers/.cache
+          key: github-etags-crawl-${{ github.run_id }}
+
+      - name: Notify Discord on failure
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
+        run: >-
+          bash scripts/notify-discord.sh
+          "MCPHub crawl failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

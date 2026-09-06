@@ -17,7 +17,8 @@
     "clean": "rimraf .turbo dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@mcphub/shared": "workspace:*"
+    "@mcphub/shared": "workspace:*",
+    "@mcphub/scoring": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

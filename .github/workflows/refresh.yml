@@ -1,0 +1,64 @@
+name: Refresh
+
+on:
+  schedule:
+    # 04:00 UTC daily — two hours after the crawl, so newly discovered servers
+    # are already in the table and get their first stats pass the same night.
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GITHUB_TOKEN: ${{ secrets.CRAWLER_GITHUB_TOKEN || github.token }}
+      LAUNCH_MODE: ${{ vars.LAUNCH_MODE || 'false' }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # This job touches every row, so the ETag cache matters more here than
+      # anywhere else: an unchanged repository costs nothing.
+      - name: Restore GitHub ETag cache
+        uses: actions/cache/restore@v4
+        with:
+          path: workers/.cache
+          key: github-etags-refresh-${{ github.run_id }}
+          restore-keys: github-etags-refresh-
+
+      - name: Refresh stats and Trust Scores
+        working-directory: workers
+        run: pnpm refresh
+
+      - name: Save GitHub ETag cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: workers/.cache
+          key: github-etags-refresh-${{ github.run_id }}
+
+      - name: Notify Discord on failure
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
+        run: >-
+          bash scripts/notify-discord.sh
+          "MCPHub refresh failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

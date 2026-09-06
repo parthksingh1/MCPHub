@@ -1,0 +1,8 @@
+{
+  "https://api.github.com/repos/sansan0/TrendRadar": "W/\"36d5eff3872644e6fb35a2efb6fc35633598af25db736bb95ccaa20ae22c8d9d\"",
+  "https://api.github.com/repos/sansan0/TrendRadar/releases?per_page=5": "\"74d1db57f0fec3481bb6b4d9bcdc020d656635ec6c53ee589d27a8831cbbe280\"",
+  "https://api.github.com/repos/sansan0/TrendRadar/git/trees/master?recursive=1": "W/\"b21ebdfddacc7dffff2e5de938de0aed27356fcb0d9ae44a48039c5b6034ff04\"",
+  "https://api.github.com/repos/diegosouzapw/OmniRoute": "\"207e293b2a481b4072313be63dcc945f77b6317bc6cec87bef53d543817145a5\"",
+  "https://api.github.com/repos/diegosouzapw/OmniRoute/releases?per_page=5": "W/\"01fb3c4fb1e62e83aeec94afe5f58a3428305eab76dea84a6d1b2f05c474d430\"",
+  "https://api.github.com/repos/diegosouzapw/OmniRoute/git/trees/release/v3.8.51?recursive=1": "W/\"94cfec6ce239b5717a97dafe4eb38c2c0fdf6bbec14650a1a2679a97ccf5e12b\""
+}

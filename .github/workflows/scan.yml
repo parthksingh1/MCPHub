@@ -1,0 +1,71 @@
+name: Security scan
+
+on:
+  schedule:
+    # 03:00 UTC every Sunday.
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    # A GitHub Actions job is killed at six hours. Sharding keeps each one well
+    # inside that even as the catalogue grows: every shard clones and scans a
+    # disjoint slice, selected deterministically by SHARD_INDEX/SHARD_COUNT.
+    timeout-minutes: 330
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SHARD_INDEX: ${{ matrix.shard }}
+      SHARD_COUNT: '8'
+      LAUNCH_MODE: ${{ vars.LAUNCH_MODE || 'false' }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install scanners
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet semgrep pip-audit
+          semgrep --version
+
+      - name: Validate the MCP ruleset
+        # A malformed rule silently matches nothing, which would quietly report
+        # every server as clean. Fail loudly instead.
+        run: semgrep --validate --config semgrep-rules/
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Scan shard ${{ matrix.shard }}
+        working-directory: workers
+        run: pnpm scan
+
+      - name: Notify Discord on failure
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
+        run: >-
+          bash scripts/notify-discord.sh
+          "MCPHub scan shard ${{ matrix.shard }} failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

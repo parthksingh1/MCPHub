@@ -1,0 +1,48 @@
+name: Health check
+
+on:
+  schedule:
+    # Hourly, at :15 to stay off the busiest cron minute on shared runners.
+    - cron: '15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: health
+  # Liveness is only interesting when it is current, so a run still going when
+  # the next one fires is stale by definition and worth cancelling.
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      LAUNCH_MODE: ${{ vars.LAUNCH_MODE || 'false' }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Probe remote servers
+        working-directory: workers
+        run: pnpm health
+
+      - name: Notify Discord on failure
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
+        run: >-
+          bash scripts/notify-discord.sh
+          "MCPHub health check failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

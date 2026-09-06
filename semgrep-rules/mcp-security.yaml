@@ -1,0 +1,228 @@
+rules:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Command execution
+  #
+  # An MCP server runs on the user's machine with their privileges, and its
+  # inputs come from a language model that an attacker may be able to influence
+  # through the documents it reads. Shelling out with an interpolated value is
+  # therefore not a code smell here — it is remote code execution with extra
+  # steps, and it is the single most important thing this ruleset looks for.
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: mcp-child-process-exec-with-variable
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: >-
+      `exec`/`execSync` is called with a non-literal command. In an MCP server
+      the argument may originate from model output, making this remote code
+      execution. Use `execFile`/`spawn` with an argument array instead, so the
+      shell never parses attacker-controlled text.
+    metadata:
+      category: security
+      mcp-severity: critical
+      cwe: 'CWE-78: OS Command Injection'
+    patterns:
+      - pattern-either:
+          - pattern: $CP.exec($CMD, ...)
+          - pattern: $CP.execSync($CMD, ...)
+          - pattern: exec($CMD, ...)
+          - pattern: execSync($CMD, ...)
+      - pattern-not: $CP.exec("...", ...)
+      - pattern-not: $CP.execSync("...", ...)
+      - pattern-not: exec("...", ...)
+      - pattern-not: execSync("...", ...)
+
+  - id: mcp-spawn-with-shell-true
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: >-
+      `spawn`/`execFile` with `shell: true` reintroduces shell parsing, undoing
+      the protection the argument array provides. Drop the `shell` option.
+    metadata:
+      category: security
+      mcp-severity: critical
+      cwe: 'CWE-78: OS Command Injection'
+    pattern-either:
+      - pattern: '$CP.spawn(..., {..., shell: true, ...})'
+      - pattern: '$CP.spawnSync(..., {..., shell: true, ...})'
+      - pattern: '$CP.execFile(..., {..., shell: true, ...})'
+
+  - id: mcp-python-shell-injection
+    languages: [python]
+    severity: ERROR
+    message: >-
+      `subprocess` is invoked with `shell=True` or `os.system` is used. In an
+      MCP server the command may derive from model output. Pass an argument
+      list and leave `shell` at its default.
+    metadata:
+      category: security
+      mcp-severity: critical
+      cwe: 'CWE-78: OS Command Injection'
+    pattern-either:
+      - pattern: subprocess.$F(..., shell=True, ...)
+      - pattern: os.system(...)
+      - pattern: os.popen(...)
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Dynamic evaluation
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: mcp-dynamic-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: >-
+      Dynamic evaluation (`eval`, `new Function`, dynamic `require`) lets any
+      string reaching this point execute as code. There is no safe way to use
+      this on a value derived from a tool argument.
+    metadata:
+      category: security
+      mcp-severity: critical
+      cwe: 'CWE-95: Eval Injection'
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+      - patterns:
+          - pattern: require($M)
+          - pattern-not: require("...")
+
+  - id: mcp-python-dynamic-eval
+    languages: [python]
+    severity: ERROR
+    message: >-
+      `eval`, `exec`, or `pickle.loads` on non-literal input executes arbitrary
+      code. Use a real parser, or `json.loads` for data.
+    metadata:
+      category: security
+      mcp-severity: critical
+      cwe: 'CWE-95: Eval Injection'
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
+      - pattern: pickle.loads(...)
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Filesystem access
+  #
+  # A filesystem MCP server is supposed to read and write files; that is the
+  # product. The risk is a path that escapes the directory the user consented
+  # to, so these rules look for writes built from unvalidated input.
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: mcp-unvalidated-path-write
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: >-
+      A file is written to a path built by concatenation. Resolve the path and
+      verify it stays inside the permitted root before writing, or a `../`
+      in a tool argument reaches anywhere on disk.
+    metadata:
+      category: security
+      mcp-severity: high
+      cwe: 'CWE-22: Path Traversal'
+    patterns:
+      - pattern-either:
+          - pattern: $FS.writeFile($PATH + $X, ...)
+          - pattern: $FS.writeFileSync($PATH + $X, ...)
+          - pattern: $FS.appendFile($PATH + $X, ...)
+          - pattern: $FS.rm($PATH + $X, ...)
+          - pattern: $FS.unlink($PATH + $X, ...)
+
+  - id: mcp-path-traversal-join
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: >-
+      `path.join` does not prevent traversal — `join("/root", "../etc")`
+      resolves outside the root. Use `path.resolve` and assert the result
+      starts with the permitted root.
+    metadata:
+      category: security
+      mcp-severity: medium
+      cwe: 'CWE-22: Path Traversal'
+    patterns:
+      - pattern: $FS.$METHOD(path.join($ROOT, $INPUT), ...)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(readFile|readFileSync|writeFile|writeFileSync|unlink|rm|rmdir)$
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Secrets
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: mcp-hardcoded-secret
+    languages: [javascript, typescript, python]
+    severity: ERROR
+    message: >-
+      A credential appears to be hardcoded. Anything committed to a public
+      repository must be treated as disclosed and rotated; read it from the
+      environment instead.
+    metadata:
+      category: security
+      mcp-severity: high
+      cwe: 'CWE-798: Hard-coded Credentials'
+    pattern-regex: >-
+      (?i)(api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token|password|client[_-]?secret)\s*[:=]\s*["'](?!.*(?:process\.env|os\.environ|\$\{|<|your|example|placeholder|xxx|change[_-]?me|test))[A-Za-z0-9_\-]{20,}["']
+
+  - id: mcp-known-token-format
+    languages: [javascript, typescript, python, generic]
+    severity: ERROR
+    message: >-
+      A live credential in a recognised provider format is present in source.
+      Rotate it immediately — public repository history cannot be un-published.
+    metadata:
+      category: security
+      mcp-severity: critical
+      cwe: 'CWE-798: Hard-coded Credentials'
+    pattern-regex: >-
+      (ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}|sk-ant-api03-[A-Za-z0-9_\-]{90,}|sk-[A-Za-z0-9]{48}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_\-]{35})
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Transport and network exposure
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: mcp-permissive-cors
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: >-
+      CORS is open to every origin. On an HTTP/SSE MCP server this lets any web
+      page the user visits drive the server's tools against their local data.
+    metadata:
+      category: security
+      mcp-severity: medium
+      cwe: 'CWE-942: Overly Permissive CORS Policy'
+    pattern-either:
+      - pattern: 'cors({..., origin: "*", ...})'
+      - pattern: 'cors({..., origin: true, ...})'
+      - pattern: $RES.setHeader("Access-Control-Allow-Origin", "*")
+      - pattern: $RES.header("Access-Control-Allow-Origin", "*")
+
+  - id: mcp-tls-verification-disabled
+    languages: [javascript, typescript, python]
+    severity: ERROR
+    message: >-
+      TLS certificate verification is disabled, making every outbound request
+      trivially interceptable.
+    metadata:
+      category: security
+      mcp-severity: high
+      cwe: 'CWE-295: Improper Certificate Validation'
+    pattern-either:
+      - pattern: 'rejectUnauthorized: false'
+      - pattern: NODE_TLS_REJECT_UNAUTHORIZED = "0"
+      - pattern: requests.$M(..., verify=False, ...)
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Tool handler input validation
+  #
+  # The MCP SDK will hand a handler whatever the model produced. A handler that
+  # declares no input schema has no contract at all.
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: mcp-tool-without-input-schema
+    languages: [javascript, typescript]
+    severity: INFO
+    message: >-
+      This tool is registered without an input schema, so arguments reach the
+      handler unvalidated. Declare a Zod (or JSON Schema) shape — it is the
+      only thing standing between model output and the handler body.
+    metadata:
+      category: security
+      mcp-severity: low
+      cwe: 'CWE-20: Improper Input Validation'
+    patterns:
+      - pattern: $SERVER.tool($NAME, $HANDLER)
+      - pattern-not: $SERVER.tool($NAME, $SCHEMA, $HANDLER)
+      - pattern-not: $SERVER.tool($NAME, $DESC, $SCHEMA, $HANDLER)
