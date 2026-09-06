@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { REPO_URL, SECURITY_CONTACT } from '@/lib/site';
+import { SECURITY_ADVISORY_URL, SECURITY_CONTACT } from '@/lib/site';
 
 export const revalidate = 86_400;
 
@@ -103,22 +103,26 @@ export default function SecurityPage(): React.JSX.Element {
 
         <h3 className="mt-6 font-medium">In MCPHub itself</h3>
         <p className="text-text-secondary mt-2 text-sm leading-relaxed">
-          Email{' '}
+          Open a{' '}
           <a
-            href={`mailto:${SECURITY_CONTACT}`}
-            className="text-accent underline underline-offset-2"
-          >
-            {SECURITY_CONTACT}
-          </a>
-          , or open a private security advisory on{' '}
-          <a
-            href={`${REPO_URL}/security/advisories/new`}
+            href={SECURITY_ADVISORY_URL}
             target="_blank"
             rel="noreferrer noopener"
             className="text-accent underline underline-offset-2"
           >
-            GitHub
+            private security advisory on GitHub
           </a>
+          {SECURITY_CONTACT ? (
+            <>
+              , or email{' '}
+              <a
+                href={`mailto:${SECURITY_CONTACT}`}
+                className="text-accent underline underline-offset-2"
+              >
+                {SECURITY_CONTACT}
+              </a>
+            </>
+          ) : null}
           . Please do not open a public issue for an unfixed vulnerability. We aim to acknowledge
           within 72 hours.
         </p>

@@ -5,6 +5,8 @@ Thanks for helping build the trusted directory for MCP servers.
 ## Getting set up
 
 ```bash
+git clone https://github.com/parthksingh1/MCPHub.git
+cd MCPHub
 pnpm install
 cp .env.example .env    # fill in Supabase + Upstash values
 docker compose up -d    # local Postgres 15 + Redis + Upstash REST emulator

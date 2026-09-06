@@ -7,6 +7,7 @@
 Smithery lists them. MCPHub rates, scans, and vets them.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Stars](https://img.shields.io/github/stars/parthksingh1/MCPHub?style=flat&color=7c3aed)](https://github.com/parthksingh1/MCPHub/stargazers)
 [![CI](https://img.shields.io/badge/CI-passing-3fb950.svg)](./.github/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-7c3aed.svg)](./CONTRIBUTING.md)
 [![$0/month](https://img.shields.io/badge/hosting-%240%2Fmonth-3fb950.svg)](./DEPLOYMENT.md)
@@ -55,13 +56,15 @@ whether it looks carefully built — as one number you can sort by.
 - 📊 **Trust Score** — 0–100 from four transparent, open-source components
 - ⚡ **One-click install** — the exact command for each of six MCP clients,
   plus a downloadable config file
-- 🏷️ **Embeddable badges** — `![Trust Score](https://mcphub.dev/api/badge/<slug>.svg)`
+- 🏷️ **Embeddable badges** — `![Trust Score](https://your-site/api/badge/<slug>)`
 - 🔌 **Public API** — everything the site uses, documented and open
 - 🌓 **Dark and light** — full parity, not an afterthought
 
 ## Quick start
 
 ```bash
+git clone https://github.com/parthksingh1/MCPHub.git
+cd MCPHub
 pnpm install
 cp .env.example .env     # fill in Supabase + Upstash
 docker compose up -d     # local Postgres 15 + Redis + Upstash REST emulator
@@ -92,7 +95,7 @@ Four equally weighted components, 25 points each:
 The algorithm is pure, deterministic, and covered by tests at 100% of
 statements, branches, functions, and lines. Read it in
 [`packages/scoring`](./packages/scoring), or the plain-English version at
-[`/trust-score`](https://mcphub.dev/trust-score) — including a section on what
+[`/trust-score`](./apps/web/app/trust-score/page.tsx) — including a section on what
 the score deliberately does not tell you.
 
 ## Repository layout
@@ -163,4 +166,6 @@ you think a Trust Score weight is wrong.
 
 ## Licence
 
-[MIT](./LICENSE)
+[MIT](./LICENSE) © Parth Kumar Singh
+
+Maintained by [@parthksingh1](https://github.com/parthksingh1/MCPHub).

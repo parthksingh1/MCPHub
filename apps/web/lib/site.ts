@@ -14,7 +14,7 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3
 
 /** The public GitHub repository for this project. */
 export const REPO_URL = (
-  process.env.NEXT_PUBLIC_REPO_URL ?? 'https://github.com/mcphub/mcphub'
+  process.env.NEXT_PUBLIC_REPO_URL ?? 'https://github.com/parthksingh1/MCPHub'
 ).replace(/\/$/, '');
 
 /** Where to file a bug. */
@@ -29,5 +29,15 @@ export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;
 /** The security policy in the repository. */
 export const SECURITY_POLICY_URL = `${REPO_URL}/blob/main/SECURITY.md`;
 
-/** Where to report a vulnerability in MCPHub itself. */
-export const SECURITY_CONTACT = process.env.NEXT_PUBLIC_SECURITY_EMAIL ?? 'security@mcphub.dev';
+/**
+ * Optional email for security reports.
+ *
+ * Undefined by default on purpose: GitHub's private security advisories are
+ * the better channel, and publishing a maintainer's personal address on a
+ * public page invites more spam than disclosures. Set the env var only if you
+ * want an address shown alongside the advisory link.
+ */
+export const SECURITY_CONTACT = process.env.NEXT_PUBLIC_SECURITY_EMAIL || null;
+
+/** Where to open a private security advisory. */
+export const SECURITY_ADVISORY_URL = `${REPO_URL}/security/advisories/new`;

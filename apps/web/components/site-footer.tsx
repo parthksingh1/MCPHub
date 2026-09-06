@@ -101,7 +101,17 @@ export function SiteFooter(): React.JSX.Element {
         </nav>
 
         <div className="text-text-muted mt-8 flex flex-col gap-2 border-t pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} MCPHub. MIT licensed.</p>
+          <p>
+            © {new Date().getFullYear()} MCPHub · MIT licensed · built by{' '}
+            <a
+              href="https://github.com/parthksingh1"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="hover:text-foreground underline underline-offset-2 transition-colors"
+            >
+              Parth Kumar Singh
+            </a>
+          </p>
           <p>
             Not affiliated with Anthropic. MCP is an open protocol by{' '}
             <a

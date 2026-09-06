@@ -51,5 +51,14 @@
     "*.{json,md,yml,yaml,css}": [
       "prettier --write"
     ]
-  }
+  },
+  "author": "Parth Kumar Singh",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/parthksingh1/MCPHub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/parthksingh1/MCPHub/issues"
+  },
+  "homepage": "https://github.com/parthksingh1/MCPHub#readme"
 }
