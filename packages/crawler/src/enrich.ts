@@ -1,6 +1,6 @@
 import { MCP_CLIENTS, type CompatibleClients, type InstallCommands } from '@mcphub/shared';
 
-import { buildSlug, parseGitHubUrl } from './canonicalize';
+import { buildSlug, ensureUniqueSlug, parseGitHubUrl } from './canonicalize';
 import {
   buildTags,
   deriveQualitySignals,
@@ -152,9 +152,10 @@ export async function enrichCandidate(
   const lastReleaseAt = publishedReleases[0]?.published_at ?? null;
   const firstReleaseAt = publishedReleases.at(-1)?.published_at ?? null;
 
-  const slugBase = buildSlug(identity);
-  const slug = takenSlugs.has(slugBase) ? `${slugify(identity.owner)}-${slugBase}` : slugBase;
-  takenSlugs.add(slug);
+  // `takenSlugs` is seeded by the caller with every slug already in the
+  // database, so this resolves collisions against persisted rows too — not
+  // just against others discovered in the same run.
+  const slug = ensureUniqueSlug(buildSlug(identity), takenSlugs);
 
   const description =
     repo.description?.trim() || facts.description || `An MCP server by ${repo.owner.login}.`;
@@ -201,12 +202,4 @@ export async function enrichCandidate(
 
     quality: deriveQualitySignals(tree, readme.length, language),
   };
-}
-
-/** Local copy of slugify to avoid a circular import through the barrel. */
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }

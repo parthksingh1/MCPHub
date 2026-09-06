@@ -14,7 +14,8 @@
     "scan": "tsx src/scan.ts",
     "health": "tsx src/health.ts",
     "awesome": "tsx src/awesome.ts",
-    "clean": "rimraf .turbo dist *.tsbuildinfo"
+    "clean": "rimraf .turbo dist *.tsbuildinfo",
+    "crawl:npm": "tsx src/crawl-npm.ts"
   },
   "dependencies": {
     "@mcphub/crawler": "workspace:*",

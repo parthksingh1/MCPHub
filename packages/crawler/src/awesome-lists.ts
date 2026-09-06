@@ -1,4 +1,5 @@
 import { canonicalizeRepoUrl, repoDedupeKey } from './canonicalize';
+import { fetchWithRetry } from './http';
 import type { RepoCandidate } from './types';
 
 /**
@@ -67,7 +68,7 @@ export async function crawlAwesomeLists(
 
   for (const list of lists) {
     try {
-      const response = await fetch(list.url, {
+      const response = await fetchWithRetry(list.url, {
         headers: { Accept: 'text/plain', 'User-Agent': 'MCPHub-Crawler' },
       });
 

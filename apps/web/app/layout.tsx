@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { CommandPalette } from '@/components/command-palette';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { SiteFooter } from '@/components/site-footer';
+import { SiteHeader } from '@/components/site-header';
 
 import './globals.css';
 
@@ -27,7 +30,7 @@ export const metadata: Metadata = {
   },
   description:
     'Discover, compare, and safely install Model Context Protocol servers. Every server is scored, scanned, and vetted.',
-  keywords: ['MCP', 'Model Context Protocol', 'Claude', 'MCP servers', 'AI tools'],
+  keywords: ['MCP', 'Model Context Protocol', 'Claude', 'MCP servers', 'AI tools', 'Cursor'],
   openGraph: {
     type: 'website',
     siteName: 'MCPHub',
@@ -47,7 +50,7 @@ export const viewport: Viewport = {
   ],
 };
 
-/** Root layout: fonts, theme, and the site-wide grain overlay. */
+/** Root layout: fonts, theme, chrome, and the global command palette. */
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
@@ -59,7 +62,24 @@ export default function RootLayout({
     >
       <body className="noise-overlay min-h-dvh font-sans">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <div className="relative z-10">{children}</div>
+          {/* Keyboard users should be able to reach the content without
+              tabbing through the whole header on every page. */}
+          <a
+            href="#main"
+            className="focus:bg-surface sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:px-4 focus:py-2 focus:text-sm"
+          >
+            Skip to content
+          </a>
+
+          <div className="relative z-10 flex min-h-dvh flex-col">
+            <SiteHeader />
+            <div id="main" className="flex-1">
+              {children}
+            </div>
+            <SiteFooter />
+          </div>
+
+          <CommandPalette />
         </ThemeProvider>
       </body>
     </html>

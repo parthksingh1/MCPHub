@@ -1,4 +1,5 @@
 import { MemoryEtagStore, type EtagStore } from './etag-store';
+import { fetchWithRetry } from './http';
 import type { GitHubRelease, GitHubRepo, GitHubTreeEntry } from './types';
 
 const API_ROOT = 'https://api.github.com';
@@ -84,7 +85,7 @@ export class GitHubClient {
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
     if (cachedEtag) headers['If-None-Match'] = cachedEtag;
 
-    const response = await fetch(url, { headers });
+    const response = await fetchWithRetry(url, { headers });
     this.recordRateLimit(response);
 
     if (response.status === 304) return { status: 'not-modified' };
@@ -180,7 +181,7 @@ export class GitHubClient {
     };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
 
-    const response = await fetch(url, { headers });
+    const response = await fetchWithRetry(url, { headers });
     this.recordRateLimit(response);
 
     if (response.status === 404) return null;

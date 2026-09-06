@@ -64,7 +64,7 @@ await runWorker('crawl', async ({ db, log }) => {
 
   // ── Skip what we already have and saw recently ────────────────────────────
   const existing = await db
-    .select({ repoUrl: servers.repoUrl, indexedAt: servers.indexedAt })
+    .select({ repoUrl: servers.repoUrl, slug: servers.slug, indexedAt: servers.indexedAt })
     .from(servers);
 
   const existingKeys = new Map<string, Date | null>();
@@ -73,7 +73,10 @@ await runWorker('crawl', async ({ db, log }) => {
     if (key) existingKeys.set(key, row.indexedAt);
   }
 
-  const takenSlugs = new Set<string>();
+  // Seeded with every slug already persisted, not just those minted this run.
+  // `slug` carries its own unique constraint, so a new server colliding with
+  // an existing one would otherwise fail the entire write batch.
+  const takenSlugs = new Set(existing.map((row) => row.slug));
   const fresh: RepoCandidate[] = [];
 
   for (const candidate of candidates) {

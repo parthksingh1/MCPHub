@@ -1,4 +1,5 @@
 import { canonicalizeRepoUrl } from './canonicalize';
+import { fetchWithRetry } from './http';
 import type { RepoCandidate } from './types';
 
 /** Shape of the npm registry search response we read. */
@@ -67,7 +68,7 @@ export async function searchNpm(queries: string[], limit = 250): Promise<RepoCan
         from: String(from),
       });
 
-      const response = await fetch(`https://registry.npmjs.org/-/v1/search?${params}`, {
+      const response = await fetchWithRetry(`https://registry.npmjs.org/-/v1/search?${params}`, {
         headers: { Accept: 'application/json' },
       });
       if (!response.ok) break;
@@ -97,7 +98,7 @@ export async function searchNpm(queries: string[], limit = 250): Promise<RepoCan
 
 /** Fetches an npm package document, or null when it does not exist. */
 export async function getNpmPackage(name: string): Promise<NpmPackument | null> {
-  const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {
+  const response = await fetchWithRetry(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {
     headers: { Accept: 'application/json' },
   });
   if (!response.ok) return null;
@@ -117,7 +118,7 @@ export async function getNpmRepoUrl(name: string): Promise<string | null> {
  * "no downloads" apart from "no data".
  */
 export async function getNpmWeeklyDownloads(name: string): Promise<number | null> {
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `https://api.npmjs.org/downloads/point/last-week/${encodeURIComponent(name)}`,
     { headers: { Accept: 'application/json' } },
   );
@@ -154,7 +155,7 @@ export async function searchPypi(packageNames: string[]): Promise<RepoCandidate[
 
 /** Fetches a PyPI package document, or null when it does not exist. */
 export async function getPypiPackage(name: string): Promise<PypiPackage | null> {
-  const response = await fetch(`https://pypi.org/pypi/${encodeURIComponent(name)}/json`, {
+  const response = await fetchWithRetry(`https://pypi.org/pypi/${encodeURIComponent(name)}/json`, {
     headers: { Accept: 'application/json' },
   });
   if (!response.ok) return null;
