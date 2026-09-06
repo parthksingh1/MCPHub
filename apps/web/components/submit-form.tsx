@@ -5,6 +5,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { AuthButton } from '@/components/auth-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -34,11 +35,13 @@ export function SubmitForm({ className }: SubmitFormProps): React.JSX.Element {
 
   const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const [duplicateSlug, setDuplicateSlug] = useState<string | null>(null);
 
   const submit = async (event: React.FormEvent): Promise<void> => {
     event.preventDefault();
     setError(null);
+    setNeedsAuth(false);
     setDuplicateSlug(null);
 
     const parsed = createSubmissionSchema.safeParse({
@@ -71,7 +74,8 @@ export function SubmitForm({ className }: SubmitFormProps): React.JSX.Element {
       setStatus('idle');
 
       if (response.status === 401) {
-        setError('Please sign in with GitHub before submitting a server.');
+        setNeedsAuth(true);
+        setError('You need to sign in before submitting a server.');
       } else if (response.status === 409) {
         setDuplicateSlug(body.error.details?.slug ?? null);
         setError(body.error.message);
@@ -195,6 +199,11 @@ export function SubmitForm({ className }: SubmitFormProps): React.JSX.Element {
           className="border-danger/30 bg-danger/10 text-danger rounded-md border p-3 text-sm"
         >
           {error}
+          {needsAuth && (
+            <div className="mt-3">
+              <AuthButton variant="full" redirectTo={'/submit'} />
+            </div>
+          )}
           {duplicateSlug && (
             <>
               {' '}

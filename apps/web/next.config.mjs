@@ -9,6 +9,7 @@ const nextConfig = {
     // will proxy and cache anything listed here, so a loose pattern turns the
     // deployment into an open image proxy on someone else's bandwidth budget.
     remotePatterns: [
+      // Also serves the signed-in user's OAuth avatar in the header.
       { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
       { protocol: 'https', hostname: 'raw.githubusercontent.com' },
       // github.com/<owner>.png is the stable avatar URL for an account, and is

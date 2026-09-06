@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { AuthButton } from '@/components/auth-button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { REPO_URL } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -118,6 +119,8 @@ export function SiteHeader(): React.JSX.Element {
           </button>
 
           <ThemeToggle />
+
+          <AuthButton className="hidden sm:block" />
 
           <a
             href={REPO_URL}

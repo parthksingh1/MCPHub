@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { AuthButton } from '@/components/auth-button';
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser } from '@/lib/auth';
@@ -44,8 +45,11 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         <p className="text-text-secondary mt-3 text-sm leading-relaxed">
           Sign in with GitHub to save favourites, rate servers, and track your submissions.
         </p>
-        <Button asChild className="mt-6">
-          <Link href="/">Back home</Link>
+        <div className="mt-7 w-full max-w-xs">
+          <AuthButton variant="full" redirectTo="/dashboard" />
+        </div>
+        <Button asChild variant="ghost" className="mt-3">
+          <Link href="/servers">Browse without signing in</Link>
         </Button>
       </main>
     );

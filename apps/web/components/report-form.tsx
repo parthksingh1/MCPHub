@@ -5,6 +5,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { AuthButton } from '@/components/auth-button';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -37,10 +38,12 @@ export function ReportForm({ slug, className }: ReportFormProps): React.JSX.Elem
   const [details, setDetails] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
 
   const submit = async (event: React.FormEvent): Promise<void> => {
     event.preventDefault();
     setError(null);
+    setNeedsAuth(false);
 
     const parsed = createReportSchema.safeParse({
       reason,
@@ -67,9 +70,10 @@ export function ReportForm({ slug, className }: ReportFormProps): React.JSX.Elem
       }
 
       setStatus('idle');
+      if (response.status === 401) setNeedsAuth(true);
       setError(
         response.status === 401
-          ? 'Please sign in with GitHub before filing a report.'
+          ? 'You need to sign in before filing a report.'
           : 'Could not file your report. Please try again.',
       );
     } catch {
@@ -154,6 +158,11 @@ export function ReportForm({ slug, className }: ReportFormProps): React.JSX.Elem
           className="border-danger/30 bg-danger/10 text-danger rounded-xl border p-3 text-sm"
         >
           {error}
+          {needsAuth && (
+            <div className="mt-3">
+              <AuthButton variant="full" redirectTo={`/servers/${slug}/report`} />
+            </div>
+          )}
         </div>
       )}
 
