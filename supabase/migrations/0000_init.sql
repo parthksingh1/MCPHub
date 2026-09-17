@@ -19,12 +19,18 @@ AS $$
   SELECT array_to_string(arr, sep);
 $$;
 --> statement-breakpoint
-CREATE SCHEMA IF NOT EXISTS "auth";
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "auth"."users" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"created_at" timestamp with time zone
-);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'auth') THEN
+    CREATE SCHEMA "auth";
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'auth' AND tablename = 'users') THEN
+    CREATE TABLE "auth"."users" (
+      "id" uuid PRIMARY KEY NOT NULL,
+      "created_at" timestamp with time zone
+    );
+  END IF;
+END $$;
 --> statement-breakpoint
 CREATE TABLE "crawl_logs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
