@@ -126,9 +126,10 @@ export default function PrivacyPage(): React.JSX.Element {
           body: (
             <p>
               If you buy a <Link href="/spotlight">Spotlight</Link> placement, payment is handled
-              entirely by Stripe. Your card details go straight to Stripe and never reach our
-              servers. We keep the placement record — which server, which dates, the amount, and the
-              email Stripe gives us for the receipt — as long as tax and accounting rules require.
+              entirely by Razorpay. Your card, UPI or bank details go straight to Razorpay and never
+              reach our servers. We keep the placement record — which server, which dates, the
+              amount, and the email Razorpay gives us for the receipt — as long as tax and
+              accounting rules require.
             </p>
           ),
         },
@@ -155,7 +156,7 @@ export default function PrivacyPage(): React.JSX.Element {
                   <strong>GitHub</strong> — sign-in and public repository data.
                 </li>
                 <li>
-                  <strong>Stripe</strong> — Spotlight payments only.
+                  <strong>Razorpay</strong> — Spotlight payments only.
                 </li>
               </ul>
               <p>

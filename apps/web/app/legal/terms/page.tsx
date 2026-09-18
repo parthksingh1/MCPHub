@@ -143,7 +143,10 @@ export default function TermsPage(): React.JSX.Element {
                   placement has started it is otherwise non-refundable, except where the law says
                   otherwise.
                 </li>
-                <li>Payments are processed by Stripe under Stripe&apos;s terms.</li>
+                <li>
+                  Payments are processed by Razorpay under Razorpay&apos;s terms, in US dollars or
+                  Indian rupees. Bids are ranked by their US-dollar value.
+                </li>
               </ul>
               <p>
                 See <Link href="/legal/sponsored">Sponsored content</Link> for how placements are
