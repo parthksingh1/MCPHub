@@ -243,6 +243,90 @@
     background: linear-gradient(to right, transparent, var(--border-hover), transparent);
   }
 
+  /*
+   * ── Rendered README ───────────────────────────────────────────────────────
+   *
+   * Long-form typography for third-party Markdown: a ~72ch measure, 1.7 line
+   * height, and code blocks that scroll inside themselves rather than
+   * widening the page.
+   */
+  .readme {
+    @apply text-text-secondary max-w-[72ch] text-[15px] leading-[1.7];
+    overflow-wrap: anywhere;
+  }
+  .readme > :first-child {
+    margin-top: 0;
+  }
+  .readme h1,
+  .readme h2,
+  .readme h3,
+  .readme h4 {
+    @apply text-foreground font-semibold tracking-tight;
+    scroll-margin-top: 5rem;
+  }
+  .readme h1 {
+    @apply mb-4 mt-10 text-2xl;
+  }
+  .readme h2 {
+    @apply mb-3 mt-10 border-b pb-2 text-xl;
+  }
+  .readme h3 {
+    @apply mb-2 mt-8 text-lg;
+  }
+  .readme h4 {
+    @apply mb-2 mt-6 text-base;
+  }
+  .readme p {
+    @apply my-4;
+  }
+  .readme a {
+    @apply text-foreground underline decoration-[var(--border-hover)] underline-offset-2 transition-colors hover:decoration-current;
+  }
+  .readme strong {
+    @apply text-foreground font-semibold;
+  }
+  .readme ul {
+    @apply my-4 list-disc space-y-1.5 pl-6;
+  }
+  .readme ol {
+    @apply my-4 list-decimal space-y-1.5 pl-6;
+  }
+  .readme li > ul,
+  .readme li > ol {
+    @apply my-1.5;
+  }
+  .readme blockquote {
+    @apply text-text-muted my-5 border-l-2 pl-4;
+  }
+  .readme hr {
+    @apply my-8 border-t;
+  }
+  .readme img {
+    @apply my-2 inline-block h-auto max-w-full rounded-md;
+  }
+  .readme :not(pre) > code {
+    @apply bg-surface-hover text-foreground rounded px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+  .readme pre {
+    @apply bg-surface my-5 overflow-x-auto rounded-xl border p-4 font-mono text-[13px] leading-relaxed;
+  }
+  .readme pre code {
+    @apply text-foreground bg-transparent p-0;
+  }
+  .readme table {
+    @apply my-5 block w-full border-collapse overflow-x-auto text-sm;
+  }
+  .readme th,
+  .readme td {
+    @apply border px-3 py-2 text-left align-top;
+  }
+  .readme th {
+    @apply bg-surface text-foreground font-medium;
+  }
+  .readme input[type='checkbox'] {
+    @apply mr-1.5 align-middle;
+  }
+
   /** Frosted panel, for anything floating above the page. */
   .panel {
     @apply bg-surface/80 border backdrop-blur-xl;

@@ -1,27 +1,44 @@
+import { parseGitHubUrl } from '@mcphub/crawler';
 import { getTrustLabel } from '@mcphub/scoring';
 import { CACHE_TTL, CATEGORY_LABELS, serverSecuritySchema, type Category } from '@mcphub/shared';
 import {
   AlertTriangle,
   BadgeCheck,
   Boxes,
+  Calendar,
+  Code2,
+  Download,
   ExternalLink,
+  FileText,
+  Flag,
+  GitCompare,
   GitFork,
+  Github,
+  Globe,
+  Package,
   Scale,
   ShieldAlert,
   ShieldCheck,
+  ShieldQuestion,
   Star,
+  Wrench,
 } from 'lucide-react';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { BadgeCta } from '@/components/badge-cta';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { InstallCommand } from '@/components/install-command';
+import { Readme } from '@/components/readme';
 import { ServerActions } from '@/components/server-actions';
 import { ServerCard } from '@/components/server-card';
 import { TrustScoreRing } from '@/components/trust-score-ring';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cacheKey, cached } from '@/lib/cache';
 import { formatCount, formatDate, formatLicense, formatRelativeTime } from '@/lib/format';
 import { getRelatedServers, getServerBySlug } from '@/lib/queries/servers';
@@ -73,7 +90,38 @@ const SEVERITY_VARIANT = {
   info: 'default',
 } as const;
 
-/** The server detail page. */
+/** One figure in the stats strip. */
+function Stat({
+  icon: Icon,
+  label,
+  value,
+  title,
+}: {
+  icon: typeof Star;
+  label: string;
+  value: string;
+  title?: string;
+}): React.JSX.Element {
+  return (
+    <div className="min-w-0 px-4 py-3" title={title}>
+      <dt className="text-text-muted flex items-center gap-1.5 text-xs">
+        <Icon className="size-3.5" aria-hidden />
+        {label}
+      </dt>
+      <dd className="mt-1 truncate text-sm font-medium tabular-nums">{value}</dd>
+    </div>
+  );
+}
+
+/**
+ * The server detail page.
+ *
+ * Restructured around the question a visitor arrives with — "should I install
+ * this, and how?" The header answers "what is it and can I trust it", the
+ * sticky sidebar keeps the install command in view while reading, and the
+ * tabs split the README, tools, security findings and score breakdown so none
+ * of them buries the others.
+ */
 export default async function ServerDetailPage({ params }: PageProps): Promise<React.JSX.Element> {
   const { slug } = await params;
   const server = await loadServer(slug);
@@ -84,22 +132,32 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
     getRelatedServers(server.id, server.categories, 6),
   );
 
+  const identity = parseGitHubUrl(server.repoUrl);
+  const repo = identity ? `${identity.owner}/${identity.repo}` : null;
+
   const security = serverSecuritySchema.safeParse(server.security);
   const findings = security.success ? security.data.findings : [];
   const scanned = security.success && security.data.scanned;
+  const lastScanAt = security.success ? security.data.lastScanAt : null;
   const audit = security.success ? security.data.dependencyAudit : undefined;
 
+  const tools = server.capabilities?.tools ?? [];
+  const primaryCategory = server.categories[0] as Category | undefined;
+
+  const packageUrl =
+    server.packageName && server.sourceType === 'npm'
+      ? `https://www.npmjs.com/package/${server.packageName}`
+      : server.packageName && server.sourceType === 'pypi'
+        ? `https://pypi.org/project/${server.packageName}`
+        : null;
+
   const trustParts = [
-    { name: 'Maintenance', value: server.trustMaintenance },
-    { name: 'Popularity', value: server.trustPopularity },
-    { name: 'Security', value: server.trustSecurity },
-    { name: 'Quality', value: server.trustQuality },
+    { name: 'Maintenance', value: server.trustMaintenance, hint: 'Commit and release recency' },
+    { name: 'Popularity', value: server.trustPopularity, hint: 'Stars and downloads, log scale' },
+    { name: 'Security', value: server.trustSecurity, hint: 'Scanner findings and advisories' },
+    { name: 'Quality', value: server.trustQuality, hint: 'README, licence, types, tests, CI' },
   ];
 
-  /**
-   * Structured data so search engines can render a rich result.
-   * `SoftwareApplication` is the closest schema.org type to an MCP server.
-   */
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -108,6 +166,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Cross-platform',
     codeRepository: server.repoUrl,
+    url: `${SITE_URL}/servers/${server.slug}`,
     ...(server.license ? { license: server.license } : {}),
     ...(server.authorName ? { author: { '@type': 'Person', name: server.authorName } } : {}),
     ...(server.ratingCount > 0
@@ -123,327 +182,412 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
   };
 
   return (
-    <main className="container py-10">
+    <main className="container py-8">
       <script
         type="application/ld+json"
-        // Serialising via JSON.stringify and escaping `<` prevents a server
-        // description containing "</script>" from breaking out of the tag.
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
+        // Escaping `<` stops a description containing "</script>" from
+        // breaking out of the tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
 
-      <nav aria-label="Breadcrumb" className="text-text-muted text-sm">
-        <Link href="/servers" className="hover:text-foreground transition-colors">
-          Servers
-        </Link>
-        <span className="mx-2" aria-hidden>
-          /
-        </span>
-        <span className="text-text-secondary">{server.name}</span>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: 'Servers', href: '/servers' },
+          ...(primaryCategory
+            ? [
+                {
+                  label: CATEGORY_LABELS[primaryCategory] ?? primaryCategory,
+                  href: `/categories/${primaryCategory}`,
+                },
+              ]
+            : []),
+          { label: server.name },
+        ]}
+      />
 
       {server.deprecated && (
-        <div className="border-danger/30 bg-danger/10 mt-6 flex items-start gap-3 rounded-lg border p-4">
+        <div
+          role="alert"
+          className="border-danger/30 bg-danger/10 mt-6 flex items-start gap-3 rounded-xl border p-4"
+        >
           <AlertTriangle className="text-danger mt-0.5 size-4 shrink-0" aria-hidden />
           <div className="text-sm">
             <p className="text-danger font-medium">This server is deprecated</p>
             <p className="text-text-secondary mt-1">
-              Its repository has been archived or removed. It is kept here so existing links keep
+              Its repository has been archived or removed. The page stays so existing links keep
               working, but it should not be installed.
             </p>
           </div>
         </div>
       )}
 
-      {/* ── Above the fold ───────────────────────────────────────────────── */}
-      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_18rem]">
-        <div className="min-w-0">
-          <div className="flex items-start gap-4">
-            {server.authorAvatar && (
-              <Image
-                src={server.authorAvatar}
-                alt=""
-                width={48}
-                height={48}
-                className="size-12 shrink-0 rounded-lg border"
-              />
-            )}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <header className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 gap-4">
+          <Avatar className="size-14 rounded-xl">
+            {server.authorAvatar && <AvatarImage src={server.authorAvatar} alt="" />}
+            <AvatarFallback className="text-sm">{server.name.slice(0, 2)}</AvatarFallback>
+          </Avatar>
 
-            <div className="min-w-0 flex-1">
-              <h1 className="flex flex-wrap items-center gap-2 text-3xl font-semibold tracking-tight">
-                {server.name}
-                {server.verified && (
-                  <BadgeCheck className="text-accent size-5" aria-label="Verified by MCPHub" />
-                )}
-              </h1>
+          <div className="min-w-0">
+            <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+              <span className="break-words">{server.name}</span>
+              {server.verified && (
+                <BadgeCheck className="text-accent size-6" aria-label="Verified by MCPHub" />
+              )}
+            </h1>
 
-              <div className="text-text-muted mt-1.5 flex flex-wrap items-center gap-2 text-sm">
-                {server.authorName && <span>by {server.authorName}</span>}
-                {server.isOfficial && <Badge variant="accent">Official</Badge>}
-                {server.categories.map((category) => (
-                  <Link key={category} href={`/categories/${category}`}>
-                    <Badge className="hover:bg-surface transition-colors">
-                      {CATEGORY_LABELS[category as Category] ?? category}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <p className="text-text-muted mt-1 text-sm">
+              {server.authorName ? (
+                <>
+                  by{' '}
+                  <span className="text-text-secondary font-mono text-[13px]">
+                    {server.authorName}
+                  </span>
+                </>
+              ) : (
+                'Unknown author'
+              )}
+              {server.packageName && (
+                <>
+                  <span className="mx-2" aria-hidden>
+                    ·
+                  </span>
+                  <span className="font-mono text-[13px]">{server.packageName}</span>
+                </>
+              )}
+            </p>
 
-            <div className="hidden shrink-0 text-center lg:block">
-              <TrustScoreRing score={server.trustTotal} size={72} strokeWidth={5} showLabel />
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              {server.isOfficial && (
+                <Badge variant="accent">
+                  <BadgeCheck aria-hidden />
+                  Official
+                </Badge>
+              )}
+              {scanned ? (
+                findings.length === 0 ? (
+                  <Badge variant="success">
+                    <ShieldCheck aria-hidden />
+                    Scan clean
+                  </Badge>
+                ) : (
+                  <Badge variant="warn">
+                    <ShieldAlert aria-hidden />
+                    {findings.length} finding{findings.length === 1 ? '' : 's'}
+                  </Badge>
+                )
+              ) : (
+                <Badge variant="outline">
+                  <ShieldQuestion aria-hidden />
+                  Not yet scanned
+                </Badge>
+              )}
+              {server.categories.map((category) => (
+                <Link key={category} href={`/categories/${category}`}>
+                  <Badge className="hover:bg-surface cursor-pointer transition-colors">
+                    {CATEGORY_LABELS[category as Category] ?? category}
+                  </Badge>
+                </Link>
+              ))}
             </div>
           </div>
+        </div>
 
-          <p className="text-text-secondary mt-5 max-w-prose text-lg leading-relaxed">
-            {server.description}
-          </p>
+        <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:items-end">
+          <TrustScoreRing score={server.trustTotal} size={76} strokeWidth={5} showLabel />
+        </div>
+      </header>
 
-          <ServerActions
-            slug={server.slug}
-            ratingAvg={Number(server.ratingAvg)}
-            ratingCount={server.ratingCount}
-            className="mt-6"
-          />
+      <p className="text-text-secondary mt-6 max-w-[72ch] text-base leading-relaxed">
+        {server.description}
+      </p>
 
-          <h2 className="text-text-muted mt-10 text-sm font-medium uppercase tracking-wide">
-            Install
-          </h2>
-          <InstallCommand commands={server.installCommands} slug={server.slug} className="mt-3" />
+      {/* ── Actions ────────────────────────────────────────────────────────── */}
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <Button asChild variant="secondary" size="sm">
+          <a href={server.repoUrl} target="_blank" rel="noreferrer noopener">
+            <Github aria-hidden />
+            Source
+          </a>
+        </Button>
+        {related[0] && (
+          <Button asChild variant="secondary" size="sm">
+            <Link href={`/compare?a=${server.slug}&b=${related[0].slug}`}>
+              <GitCompare aria-hidden />
+              Compare
+            </Link>
+          </Button>
+        )}
+        <ServerActions
+          slug={server.slug}
+          ratingAvg={Number(server.ratingAvg)}
+          ratingCount={server.ratingCount}
+          className="ml-1"
+        />
+      </div>
 
-          {/* ── Tools ─────────────────────────────────────────────────────── */}
-          {server.capabilities?.tools && server.capabilities.tools.length > 0 && (
-            <section className="mt-10">
-              <h2 className="text-text-muted flex items-center gap-2 text-sm font-medium uppercase tracking-wide">
-                <Boxes className="size-4" aria-hidden />
-                Tools ({server.capabilities.tools.length})
-              </h2>
-              <ul className="mt-3 flex flex-wrap gap-1.5">
-                {server.capabilities.tools.map((tool) => (
-                  <li key={tool.name}>
-                    <code className="bg-surface rounded-sm border px-2 py-1 font-mono text-xs">
-                      {tool.name}
-                    </code>
+      {/* ── Stats strip ────────────────────────────────────────────────────── */}
+      <dl className="bg-surface mt-6 grid grid-cols-2 divide-y rounded-xl border sm:grid-cols-3 sm:divide-y-0 lg:grid-cols-6 lg:divide-x">
+        <Stat icon={Star} label="Stars" value={formatCount(server.githubStars)} />
+        <Stat icon={GitFork} label="Forks" value={formatCount(server.githubForks)} />
+        <Stat icon={Scale} label="Licence" value={formatLicense(server.license) ?? 'Unknown'} />
+        <Stat
+          icon={Code2}
+          label="Language"
+          value={
+            server.language ? server.language[0]?.toUpperCase() + server.language.slice(1) : '—'
+          }
+        />
+        <Stat
+          icon={Calendar}
+          label="Last commit"
+          value={formatRelativeTime(server.lastCommitAt)}
+          title={formatDate(server.lastCommitAt)}
+        />
+        <Stat
+          icon={Download}
+          label="npm / week"
+          value={server.npmWeeklyDownloads !== null ? formatCount(server.npmWeeklyDownloads) : '—'}
+        />
+      </dl>
+
+      {/* ── Body ───────────────────────────────────────────────────────────── */}
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Tabs defaultValue="overview" className="min-w-0">
+          <TabsList aria-label="Server details">
+            <TabsTrigger value="overview">
+              <FileText className="size-3.5" aria-hidden />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="tools">
+              <Wrench className="size-3.5" aria-hidden />
+              Tools
+              <span className="text-text-muted tabular-nums">{tools.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="security">
+              <ShieldCheck className="size-3.5" aria-hidden />
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="trust">Trust Score</TabsTrigger>
+            <TabsTrigger value="alternatives">
+              Alternatives
+              <span className="text-text-muted tabular-nums">{related.length}</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            {server.longDescription ? (
+              <Readme markdown={server.longDescription} repo={repo} />
+            ) : (
+              <p className="text-text-muted text-sm">
+                This server has no README. See the{' '}
+                <a href={server.repoUrl} className="underline underline-offset-2">
+                  repository
+                </a>{' '}
+                for setup instructions.
+              </p>
+            )}
+          </TabsContent>
+
+          <TabsContent value="tools">
+            {tools.length > 0 ? (
+              <ul className="divide-y rounded-xl border">
+                {tools.map((tool) => (
+                  <li key={tool.name} className="flex items-start gap-3 px-4 py-3">
+                    <Boxes className="text-text-muted mt-0.5 size-4 shrink-0" aria-hidden />
+                    <div className="min-w-0">
+                      <code className="font-mono text-sm">{tool.name}</code>
+                      {tool.description && (
+                        <p className="text-text-muted mt-0.5 text-sm">{tool.description}</p>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
-            </section>
-          )}
-
-          {/* ── Security ──────────────────────────────────────────────────── */}
-          <section className="mt-10">
-            <h2 className="text-text-muted flex items-center gap-2 text-sm font-medium uppercase tracking-wide">
-              {findings.length > 0 ? (
-                <ShieldAlert className="size-4" aria-hidden />
-              ) : (
-                <ShieldCheck className="size-4" aria-hidden />
-              )}
-              Security
-            </h2>
-
-            <div className="bg-surface mt-3 rounded-lg border p-5">
-              {!scanned ? (
-                // Saying "no findings" for a server nobody has scanned would be
-                // actively misleading — it is the difference between "we
-                // checked and it is clean" and "we have not checked".
-                <p className="text-text-secondary text-sm">
-                  <span className="text-foreground font-medium">Not yet scanned.</span> This server
-                  is queued for the weekly security scan. Absence of findings here does not mean
-                  absence of risk — review the source before installing.
-                </p>
-              ) : findings.length === 0 ? (
-                <p className="text-text-secondary text-sm">
-                  <span className="text-success font-medium">No findings.</span> The last scan found
-                  no matches against the MCP ruleset
-                  {audit && audit.total === 0 ? ' and no dependency advisories' : ''}.
-                </p>
-              ) : (
-                <ul className="space-y-3">
-                  {findings.slice(0, 12).map((finding, index) => (
-                    <li key={`${finding.ruleId}-${index}`} className="flex items-start gap-3">
-                      <Badge variant={SEVERITY_VARIANT[finding.severity]}>{finding.severity}</Badge>
-                      <div className="min-w-0 text-sm">
-                        <p className="text-text-secondary">{finding.message}</p>
-                        {finding.file && (
-                          <p className="text-text-muted mt-0.5 truncate font-mono text-xs">
-                            {finding.file}
-                            {finding.line ? `:${finding.line}` : ''}
-                          </p>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {audit && audit.total > 0 && (
-                <p className="text-text-muted mt-4 border-t pt-4 text-sm">
-                  Dependency audit ({audit.tool}): {audit.critical} critical, {audit.high} high,{' '}
-                  {audit.medium} medium, {audit.low} low.
-                </p>
-              )}
-            </div>
-          </section>
-
-          {/* ── Trust breakdown ───────────────────────────────────────────── */}
-          <section className="mt-10">
-            <h2 className="text-text-muted text-sm font-medium uppercase tracking-wide">
-              Trust Score breakdown
-            </h2>
-            <div className="bg-surface mt-3 rounded-lg border p-5">
-              <p className="text-text-secondary mb-4 text-sm">
-                <span className="text-foreground font-medium">
-                  {server.trustTotal}/100 — {getTrustLabel(server.trustTotal)}
-                </span>
+            ) : (
+              <p className="text-text-muted text-sm">
+                No tools were documented in this server&apos;s README. The server may still expose
+                tools — they are discovered at runtime by your MCP client.
               </p>
+            )}
+          </TabsContent>
 
-              <dl className="space-y-3">
-                {trustParts.map((part) => (
-                  <div
-                    key={part.name}
-                    className="grid grid-cols-[7rem_1fr_2.5rem] items-center gap-3"
-                  >
-                    <dt className="text-text-secondary text-sm">{part.name}</dt>
-                    <dd className="bg-surface-hover h-1.5 overflow-hidden rounded-full">
-                      <div
-                        className="bg-foreground h-full rounded-full"
-                        style={{ width: `${(part.value / 25) * 100}%` }}
-                      />
-                    </dd>
-                    <dd className="text-text-muted text-right font-mono text-xs tabular-nums">
-                      {part.value}/25
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+          <TabsContent value="security">
+            <Card>
+              <CardContent className="p-5">
+                {!scanned ? (
+                  <p className="text-text-secondary text-sm leading-relaxed">
+                    <span className="text-foreground font-medium">Not yet scanned.</span> This
+                    server is queued for the weekly scan. No findings here does <em>not</em> mean no
+                    risk — review the source before installing.
+                  </p>
+                ) : findings.length === 0 ? (
+                  <p className="text-text-secondary text-sm leading-relaxed">
+                    <span className="text-success font-medium">No findings.</span> The last scan
+                    {lastScanAt ? ` (${formatDate(lastScanAt)})` : ''} matched nothing in the MCP
+                    ruleset
+                    {audit && audit.total === 0 ? ' and found no dependency advisories' : ''}.
+                  </p>
+                ) : (
+                  <ul className="space-y-4">
+                    {findings.slice(0, 20).map((finding, index) => (
+                      <li key={`${finding.ruleId}-${index}`} className="flex items-start gap-3">
+                        <Badge variant={SEVERITY_VARIANT[finding.severity]} className="capitalize">
+                          {finding.severity}
+                        </Badge>
+                        <div className="min-w-0 text-sm">
+                          <p className="text-text-secondary">{finding.message}</p>
+                          {finding.file && (
+                            <p className="text-text-muted mt-1 truncate font-mono text-xs">
+                              {finding.file}
+                              {finding.line ? `:${finding.line}` : ''}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
-              <Link
-                href="/trust-score"
-                className="text-accent mt-5 inline-block text-sm transition-opacity hover:opacity-80"
-              >
-                How is this calculated? →
+                {audit && audit.total > 0 && (
+                  <p className="text-text-muted mt-5 border-t pt-4 text-sm">
+                    Dependency audit ({audit.tool}): {audit.critical} critical, {audit.high} high,{' '}
+                    {audit.medium} medium, {audit.low} low.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+            <p className="text-text-muted mt-4 text-xs">
+              What the scan covers and what it cannot tell you:{' '}
+              <Link href="/security" className="underline underline-offset-2">
+                security policy
               </Link>
-            </div>
+              .
+            </p>
+          </TabsContent>
+
+          <TabsContent value="trust">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {server.trustTotal}/100 — {getTrustLabel(server.trustTotal)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <dl className="space-y-4">
+                  {trustParts.map((part) => (
+                    <div key={part.name}>
+                      <div className="flex items-baseline justify-between gap-3 text-sm">
+                        <dt>
+                          {part.name}
+                          <span className="text-text-muted ml-2 text-xs">{part.hint}</span>
+                        </dt>
+                        <dd className="font-mono text-xs tabular-nums">{part.value}/25</dd>
+                      </div>
+                      <div className="bg-surface-hover mt-2 h-1.5 overflow-hidden rounded-full">
+                        <div
+                          className="bg-foreground h-full rounded-full"
+                          style={{ width: `${(part.value / 25) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </dl>
+                <Link
+                  href="/trust-score"
+                  className="text-text-secondary hover:text-foreground mt-6 inline-block text-sm underline underline-offset-2"
+                >
+                  How the score is calculated
+                </Link>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="alternatives">
+            {related.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {related.map((item, index) => (
+                  <ServerCard key={item.id} server={item} index={index} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-text-muted text-sm">
+                No alternatives indexed in these categories yet.
+              </p>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* ── Sidebar ────────────────────────────────────────────────────── */}
+        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+          <section aria-labelledby="install-heading">
+            <h2 id="install-heading" className="eyebrow mb-2">
+              Install
+            </h2>
+            <InstallCommand commands={server.installCommands} slug={server.slug} />
           </section>
+
+          <Card>
+            <CardContent className="space-y-1 p-2">
+              <a
+                href={server.repoUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="hover:bg-surface-hover flex min-h-10 items-center justify-between gap-2 rounded-md px-3 text-sm transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Github className="text-text-muted size-4" aria-hidden />
+                  Repository
+                </span>
+                <ExternalLink className="text-text-muted size-3.5" aria-hidden />
+              </a>
+              {packageUrl && (
+                <a
+                  href={packageUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="hover:bg-surface-hover flex min-h-10 items-center justify-between gap-2 rounded-md px-3 text-sm transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Package className="text-text-muted size-4" aria-hidden />
+                    {server.sourceType === 'pypi' ? 'PyPI' : 'npm'} package
+                  </span>
+                  <ExternalLink className="text-text-muted size-3.5" aria-hidden />
+                </a>
+              )}
+              {server.homepageUrl && (
+                <a
+                  href={server.homepageUrl}
+                  target="_blank"
+                  rel="noreferrer noopener nofollow"
+                  className="hover:bg-surface-hover flex min-h-10 items-center justify-between gap-2 rounded-md px-3 text-sm transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Globe className="text-text-muted size-4" aria-hidden />
+                    Homepage
+                  </span>
+                  <ExternalLink className="text-text-muted size-3.5" aria-hidden />
+                </a>
+              )}
+              <Link
+                href={`/servers/${server.slug}/report`}
+                className="text-text-muted hover:bg-surface-hover hover:text-foreground flex min-h-10 items-center gap-2 rounded-md px-3 text-sm transition-colors"
+              >
+                <Flag className="size-4" aria-hidden />
+                Report this listing
+              </Link>
+            </CardContent>
+          </Card>
 
           <BadgeCta
             slug={server.slug}
             name={server.name}
             trustTotal={server.trustTotal}
             siteUrl={SITE_URL}
-            className="mt-10"
           />
-        </div>
-
-        {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-        <aside className="space-y-6">
-          <div className="lg:hidden">
-            <TrustScoreRing score={server.trustTotal} size={72} strokeWidth={5} showLabel />
-          </div>
-
-          <dl className="bg-surface space-y-3 rounded-lg border p-5 text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <dt className="text-text-muted flex items-center gap-1.5">
-                <Star className="size-3.5" aria-hidden />
-                Stars
-              </dt>
-              <dd className="tabular-nums">{formatCount(server.githubStars)}</dd>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <dt className="text-text-muted flex items-center gap-1.5">
-                <GitFork className="size-3.5" aria-hidden />
-                Forks
-              </dt>
-              <dd className="tabular-nums">{formatCount(server.githubForks)}</dd>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <dt className="text-text-muted flex items-center gap-1.5">
-                <Scale className="size-3.5" aria-hidden />
-                Licence
-              </dt>
-              <dd>{formatLicense(server.license) ?? 'Unknown'}</dd>
-            </div>
-            {server.language && (
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-text-muted">Language</dt>
-                <dd className="capitalize">{server.language}</dd>
-              </div>
-            )}
-            <div className="flex items-center justify-between gap-3">
-              <dt className="text-text-muted">Last commit</dt>
-              <dd title={formatDate(server.lastCommitAt)}>
-                {formatRelativeTime(server.lastCommitAt)}
-              </dd>
-            </div>
-            {server.npmWeeklyDownloads !== null && (
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-text-muted">npm / week</dt>
-                <dd className="tabular-nums">{formatCount(server.npmWeeklyDownloads)}</dd>
-              </div>
-            )}
-          </dl>
-
-          <div className="space-y-2">
-            <a
-              href={server.repoUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="bg-surface hover:border-hover hover:bg-surface-hover flex items-center justify-between gap-2 rounded-lg border px-4 py-2.5 text-sm transition-colors"
-            >
-              View source
-              <ExternalLink className="text-text-muted size-3.5" aria-hidden />
-            </a>
-            {server.homepageUrl && (
-              <a
-                href={server.homepageUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="bg-surface hover:border-hover hover:bg-surface-hover flex items-center justify-between gap-2 rounded-lg border px-4 py-2.5 text-sm transition-colors"
-              >
-                Homepage
-                <ExternalLink className="text-text-muted size-3.5" aria-hidden />
-              </a>
-            )}
-          </div>
-
-          {server.tags.length > 0 && (
-            <div>
-              <h2 className="text-text-muted mb-2 text-xs font-medium uppercase tracking-wide">
-                Tags
-              </h2>
-              <ul className="flex flex-wrap gap-1.5">
-                {server.tags.map((tag) => (
-                  <li key={tag}>
-                    <Badge variant="outline">{tag}</Badge>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <p className="text-text-muted text-xs">
-            Something wrong with this listing?{' '}
-            <Link href={`/servers/${server.slug}/report`} className="underline underline-offset-2">
-              Report it
-            </Link>
-            .
-          </p>
         </aside>
       </div>
-
-      {/* ── Related ──────────────────────────────────────────────────────── */}
-      {related.length > 0 && (
-        <section className="mt-16">
-          <h2 className="text-xl font-semibold tracking-tight">Alternatives</h2>
-          <p className="text-text-muted mt-1 text-sm">Other servers in the same categories.</p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((item, index) => (
-              <ServerCard key={item.id} server={item} index={index} />
-            ))}
-          </div>
-        </section>
-      )}
     </main>
   );
 }
