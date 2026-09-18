@@ -1,4 +1,4 @@
-import type { DiscoveredServer } from '@mcphub/crawler';
+import { isExcludedRepo, type DiscoveredServer } from '@mcphub/crawler';
 import { servers, type Database, type NewServerRow } from '@mcphub/db';
 import { computeTrustScore, type ScoringInput } from '@mcphub/scoring';
 import { sql } from 'drizzle-orm';
@@ -88,11 +88,15 @@ export function toServerRow(server: DiscoveredServer): NewServerRow {
  * classifier, and a directory that forgets its own moderation is not trusted.
  *
  * `security` is likewise preserved: only the scanner writes it.
+ *
+ * Repositories on the maintainer exclusion list are dropped before the write,
+ * so a removed project never reappears on the next crawl.
  */
 export async function upsertServers(
   db: Database,
-  rows: NewServerRow[],
+  candidates: NewServerRow[],
 ): Promise<{ inserted: number; updated: number }> {
+  const rows = candidates.filter((row) => !isExcludedRepo(row.repoUrl));
   if (rows.length === 0) return { inserted: 0, updated: 0 };
 
   const result = await db

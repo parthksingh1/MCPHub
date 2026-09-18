@@ -1,0 +1,50 @@
+name: Listing removal or correction
+description: Maintainers — ask for your MCP server listing to be corrected, deprecated, or removed.
+title: '[Listing] '
+labels: [listing-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for getting in touch. You don't need to give a reason for a removal.
+        We verify requests by checking that the account opening this issue has write
+        access to the repository, and act within 7 days. See https://github.com/parthksingh1/MCPHub
+        and the site's /legal/removal page for the full process.
+  - type: input
+    id: listing
+    attributes:
+      label: MCPHub page URL
+      placeholder: https://…/servers/your-server
+    validations:
+      required: true
+  - type: input
+    id: repo
+    attributes:
+      label: Repository
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: dropdown
+    id: request
+    attributes:
+      label: What would you like?
+      options:
+        - Remove the listing and stop indexing it
+        - Mark the listing as deprecated
+        - Correct information on the listing
+        - Dispute a security scan result
+        - Remove a review
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: For corrections, tell us what is wrong and what it should say.
+  - type: checkboxes
+    id: authority
+    attributes:
+      label: Confirmation
+      options:
+        - label: I maintain this project or am authorised to act for it.
+          required: true

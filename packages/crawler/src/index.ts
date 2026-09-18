@@ -11,6 +11,7 @@ export * from './classify';
 export * from './discover';
 export * from './enrich';
 export * from './enrich-npm';
+export * from './exclusions';
 export * from './etag-store';
 export * from './github';
 export * from './http';
