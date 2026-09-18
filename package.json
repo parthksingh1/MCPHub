@@ -60,5 +60,10 @@
   "bugs": {
     "url": "https://github.com/parthksingh1/MCPHub/issues"
   },
-  "homepage": "https://github.com/parthksingh1/MCPHub#readme"
+  "homepage": "https://github.com/parthksingh1/MCPHub#readme",
+  "pnpm": {
+    "overrides": {
+      "postcss@<8.5.23": "^8.5.23"
+    }
+  }
 }
