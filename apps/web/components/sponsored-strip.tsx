@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { TrustScoreRing } from '@/components/trust-score-ring';
+import { TrustPill } from '@/components/trust-pill';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { SponsorRow } from '@/lib/queries/spotlight';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,7 @@ export function SponsoredStrip({
                   {sponsor.description}
                 </span>
               </span>
-              <TrustScoreRing score={sponsor.trustTotal} size={32} strokeWidth={3} />
+              <TrustPill score={sponsor.trustTotal} />
             </Link>
           </li>
         ))}

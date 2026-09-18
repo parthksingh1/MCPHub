@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { AuthButton } from '@/components/auth-button';
 import { DeleteAccount } from '@/components/delete-account';
 import { PageHeader } from '@/components/page-header';
-import { TrustScoreRing } from '@/components/trust-score-ring';
+import { TrustPill } from '@/components/trust-pill';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
@@ -109,11 +109,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
                     href={`/servers/${favorite.servers.slug}`}
                     className="bg-surface hover:border-hover hover:bg-surface-hover flex items-center gap-4 rounded-lg border p-4 transition-colors"
                   >
-                    <TrustScoreRing
-                      score={favorite.servers.trust_total}
-                      size={40}
-                      strokeWidth={3}
-                    />
+                    <TrustPill score={favorite.servers.trust_total} />
                     <span className="min-w-0">
                       <span className="block truncate font-medium">{favorite.servers.name}</span>
                       <span className="text-text-muted block truncate text-sm">

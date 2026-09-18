@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SpotlightForm } from '@/components/spotlight-form';
-import { TrustScoreRing } from '@/components/trust-score-ring';
+import { TrustPill } from '@/components/trust-pill';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cacheKey, cached } from '@/lib/cache';
@@ -148,7 +148,7 @@ export default async function SpotlightPage({
                         {formatUsd(sponsor.totalCents)} · ends {formatRelativeTime(sponsor.endsAt)}
                       </p>
                     </div>
-                    <TrustScoreRing score={sponsor.trustTotal} size={34} strokeWidth={3} />
+                    <TrustPill score={sponsor.trustTotal} />
                   </li>
                 ))}
               </ol>

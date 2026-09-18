@@ -5,7 +5,7 @@ import { ArrowUpRight, Check, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { TrustScoreRing } from '@/components/trust-score-ring';
+import { TrustPill } from '@/components/trust-pill';
 import { cn } from '@/lib/utils';
 
 /** A server shown in the panel's leaderboard. */
@@ -104,7 +104,7 @@ export function HeroPanel({ servers, className }: HeroPanelProps): React.JSX.Ele
                   )}
                 </span>
 
-                <TrustScoreRing score={server.trustTotal} size={34} strokeWidth={3} />
+                <TrustPill score={server.trustTotal} />
 
                 <ArrowUpRight
                   className="text-text-muted size-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"

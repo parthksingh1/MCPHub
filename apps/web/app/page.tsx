@@ -46,29 +46,25 @@ const TRUST_PARTS = [
     name: 'Maintenance',
     detail: 'Commit and release recency. Is anyone still looking after it?',
     icon: Activity,
-    tone: 'text-sky-600 bg-sky-500/10 dark:text-sky-300',
-    bar: 'bg-sky-500',
+    tone: 'text-sky-600 dark:text-sky-400',
   },
   {
     name: 'Popularity',
     detail: 'Stars on a log scale, so small projects still register.',
     icon: Star,
-    tone: 'text-amber-600 bg-amber-500/10 dark:text-amber-300',
-    bar: 'bg-amber-500',
+    tone: 'text-amber-600 dark:text-amber-400',
   },
   {
     name: 'Security',
     detail: 'A purpose-built Semgrep ruleset, plus a dependency audit.',
     icon: ShieldCheck,
-    tone: 'text-emerald-600 bg-emerald-500/10 dark:text-emerald-300',
-    bar: 'bg-emerald-500',
+    tone: 'text-emerald-600 dark:text-emerald-400',
   },
   {
     name: 'Quality',
     detail: 'README, licence, types, tests, CI — the marks of care.',
     icon: Award,
-    tone: 'text-rose-600 bg-rose-500/10 dark:text-rose-300',
-    bar: 'bg-rose-500',
+    tone: 'text-rose-600 dark:text-rose-400',
   },
 ] as const;
 
@@ -79,7 +75,7 @@ const FEATURES = [
     text: 'Maintenance, popularity, security and quality — one open, reproducible number for every server.',
     href: '/trust-score',
     icon: Sparkles,
-    tone: 'text-emerald-600 bg-emerald-500/10 ring-emerald-500/20 dark:text-emerald-300',
+    tone: 'text-emerald-600 dark:text-emerald-400',
     wide: true,
   },
   {
@@ -87,7 +83,7 @@ const FEATURES = [
     text: 'Every repo runs through an MCP-specific Semgrep ruleset and a dependency audit.',
     href: '/security',
     icon: ShieldCheck,
-    tone: 'text-rose-600 bg-rose-500/10 ring-rose-500/20 dark:text-rose-300',
+    tone: 'text-rose-600 dark:text-rose-400',
     wide: false,
   },
   {
@@ -95,7 +91,7 @@ const FEATURES = [
     text: 'See who leads today, and who climbed fastest this week.',
     href: '/rankings',
     icon: Trophy,
-    tone: 'text-amber-600 bg-amber-500/10 ring-amber-500/20 dark:text-amber-300',
+    tone: 'text-amber-600 dark:text-amber-400',
     wide: false,
   },
   {
@@ -103,7 +99,7 @@ const FEATURES = [
     text: 'Ready-made config for Claude Desktop, Cursor, VS Code, Windsurf and more — plus side-by-side compare.',
     href: '/compare',
     icon: GitFork,
-    tone: 'text-sky-600 bg-sky-500/10 ring-sky-500/20 dark:text-sky-300',
+    tone: 'text-sky-600 dark:text-sky-400',
     wide: true,
   },
 ] as const;
@@ -277,19 +273,19 @@ export default async function HomePage(): Promise<React.JSX.Element> {
                   label: 'Servers',
                   value: stats.totalServers,
                   icon: Boxes,
-                  tone: 'text-emerald-600 bg-emerald-500/10 dark:text-emerald-300',
+                  tone: 'text-emerald-600 dark:text-emerald-400',
                 },
                 {
                   label: 'Categories',
                   value: stats.totalCategories,
                   icon: LayoutGrid,
-                  tone: 'text-sky-600 bg-sky-500/10 dark:text-sky-300',
+                  tone: 'text-sky-600 dark:text-sky-400',
                 },
                 {
                   label: 'Clients',
                   value: stats.totalClients,
                   icon: MonitorSmartphone,
-                  tone: 'text-amber-600 bg-amber-500/10 dark:text-amber-300',
+                  tone: 'text-amber-600 dark:text-amber-400',
                 },
               ].map((stat) => (
                 <div
@@ -297,7 +293,10 @@ export default async function HomePage(): Promise<React.JSX.Element> {
                   className="bg-surface/70 flex flex-col rounded-xl border p-3 backdrop-blur"
                 >
                   <span
-                    className={cn('flex size-7 items-center justify-center rounded-lg', stat.tone)}
+                    className={cn(
+                      'bg-surface-hover flex size-7 items-center justify-center rounded-lg',
+                      stat.tone,
+                    )}
                   >
                     <stat.icon className="size-4" aria-hidden />
                   </span>
@@ -349,7 +348,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
             >
               <span
                 className={cn(
-                  'flex size-11 items-center justify-center rounded-xl ring-1 ring-inset',
+                  'bg-surface-hover ring-border flex size-11 items-center justify-center rounded-xl ring-1 ring-inset',
                   feature.tone,
                 )}
               >
@@ -459,7 +458,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
                   <dt className="flex items-center gap-3">
                     <span
                       className={cn(
-                        'flex size-9 items-center justify-center rounded-lg',
+                        'bg-surface-hover flex size-9 items-center justify-center rounded-lg',
                         part.tone,
                       )}
                     >
@@ -469,12 +468,6 @@ export default async function HomePage(): Promise<React.JSX.Element> {
                     <span className="text-text-muted ml-auto font-mono text-xs">25 pts</span>
                   </dt>
                   <dd className="text-text-muted mt-3 text-sm leading-relaxed">{part.detail}</dd>
-                  <div
-                    aria-hidden
-                    className="bg-surface-hover mt-4 h-1 overflow-hidden rounded-full"
-                  >
-                    <div className={cn('h-full w-full rounded-full opacity-80', part.bar)} />
-                  </div>
                 </div>
               ))}
             </dl>
