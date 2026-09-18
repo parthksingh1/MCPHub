@@ -6,5 +6,6 @@
  */
 
 export * from './compute';
+export * from './awards';
 export * from './bands';
 export * from './types';
