@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { AuthButton } from '@/components/auth-button';
+import { DeleteAccount } from '@/components/delete-account';
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser } from '@/lib/auth';
@@ -144,6 +145,8 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
           </ul>
         )}
       </section>
+
+      <DeleteAccount />
     </main>
   );
 }
