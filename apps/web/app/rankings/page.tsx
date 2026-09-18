@@ -8,6 +8,7 @@ import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cacheKey, cached } from '@/lib/cache';
+import { categoryStyle } from '@/lib/category-style';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import { getTrendingServers, listServers, type ServerSummaryRow } from '@/lib/queries/servers';
 import { safeQuery } from '@/lib/safe-query';
@@ -32,6 +33,13 @@ const VIEWS = {
 } as const;
 
 type View = keyof typeof VIEWS;
+
+/** Gold, silver and bronze for the podium; everyone else stays plain. */
+const MEDALS: Record<number, string> = {
+  0: 'bg-amber-400/15 text-amber-600 ring-1 ring-inset ring-amber-400/40 font-semibold dark:text-amber-300',
+  1: 'bg-slate-400/15 text-slate-600 ring-1 ring-inset ring-slate-400/40 font-semibold dark:text-slate-300',
+  2: 'bg-orange-400/15 text-orange-700 ring-1 ring-inset ring-orange-400/40 font-semibold dark:text-orange-300',
+};
 
 /** Next 15 passes search params as a promise. */
 interface PageProps {
@@ -143,26 +151,29 @@ export default async function RankingsPage({
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-xl border">
-          <table className="w-full min-w-[40rem] text-sm">
+          <table className="w-full table-fixed text-sm">
             <caption className="sr-only">{VIEWS[view].label} MCP servers</caption>
             <thead>
               <tr className="text-text-muted bg-surface border-b text-left text-xs">
-                <th scope="col" className="w-14 px-4 py-3 font-medium">
+                <th scope="col" className="w-12 px-3 py-3 font-medium sm:w-16 sm:px-4">
                   #
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
                   Server
                 </th>
-                <th scope="col" className="hidden px-4 py-3 font-medium md:table-cell">
+                <th scope="col" className="hidden w-44 px-4 py-3 font-medium md:table-cell">
                   Category
                 </th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">
+                <th
+                  scope="col"
+                  className="hidden w-24 px-4 py-3 text-right font-medium sm:table-cell"
+                >
                   Stars
                 </th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">
+                <th scope="col" className="w-16 px-2 py-3 text-right font-medium sm:w-24 sm:px-4">
                   Change
                 </th>
-                <th scope="col" className="w-20 px-4 py-3 text-right font-medium">
+                <th scope="col" className="w-14 px-2 py-3 text-right font-medium sm:w-20 sm:px-4">
                   Score
                 </th>
               </tr>
@@ -172,26 +183,26 @@ export default async function RankingsPage({
                 const category = server.categories[0] as Category | undefined;
                 return (
                   <tr key={server.id} className="hover:bg-surface-hover group transition-colors">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 sm:px-4">
                       <span
                         className={cn(
-                          'font-mono text-sm tabular-nums',
-                          index < 3 ? 'text-foreground font-semibold' : 'text-text-muted',
+                          'inline-flex size-7 items-center justify-center rounded-full font-mono text-sm tabular-nums',
+                          MEDALS[index] ?? 'text-text-muted',
                         )}
                       >
                         {index + 1}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-3 sm:px-4">
                       <Link
                         href={`/servers/${server.slug}`}
-                        className="flex min-w-0 items-center gap-3"
+                        className="flex min-w-0 items-center gap-3 overflow-hidden"
                       >
                         <Avatar className="size-8">
                           {server.authorAvatar && <AvatarImage src={server.authorAvatar} alt="" />}
                           <AvatarFallback>{server.name.slice(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <span className="min-w-0">
+                        <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-1.5 truncate font-medium group-hover:underline group-hover:underline-offset-2">
                             {server.name}
                             {server.isOfficial && <Badge variant="accent">Official</Badge>}
@@ -205,18 +216,27 @@ export default async function RankingsPage({
                       </Link>
                     </td>
                     <td className="hidden px-4 py-3 md:table-cell">
-                      {category && <Badge>{CATEGORY_LABELS[category] ?? category}</Badge>}
+                      {category && (
+                        <span
+                          className={cn(
+                            'inline-flex max-w-full truncate rounded-md border px-2 py-0.5 text-xs font-medium',
+                            categoryStyle(category).chip,
+                          )}
+                        >
+                          {CATEGORY_LABELS[category] ?? category}
+                        </span>
+                      )}
                     </td>
-                    <td className="text-text-secondary px-4 py-3 text-right tabular-nums">
+                    <td className="text-text-secondary hidden px-4 py-3 text-right tabular-nums sm:table-cell">
                       <span className="inline-flex items-center gap-1">
                         <Star className="size-3" aria-hidden />
                         {formatCount(server.githubStars)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-2 py-3 text-right sm:px-4">
                       <Movement now={server.trustTotal} previous={server.trustPrevious} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-3 sm:px-4">
                       <div className="flex justify-end">
                         <TrustScoreRing score={server.trustTotal} size={34} strokeWidth={3} />
                       </div>

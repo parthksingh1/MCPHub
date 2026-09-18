@@ -40,9 +40,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cacheKey, cached } from '@/lib/cache';
+import { categoryStyle } from '@/lib/category-style';
 import { formatCount, formatDate, formatLicense, formatRelativeTime } from '@/lib/format';
 import { getRelatedServers, getServerBySlug } from '@/lib/queries/servers';
 import { SITE_URL } from '@/lib/site';
+import { cn } from '@/lib/utils';
 
 /**
  * Five minutes. This page is roughly 90% of MCPHub's traffic, so its ISR
@@ -284,10 +286,15 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
                 </Badge>
               )}
               {server.categories.map((category) => (
-                <Link key={category} href={`/categories/${category}`}>
-                  <Badge className="hover:bg-surface cursor-pointer transition-colors">
-                    {CATEGORY_LABELS[category as Category] ?? category}
-                  </Badge>
+                <Link
+                  key={category}
+                  href={`/categories/${category}`}
+                  className={cn(
+                    'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-80',
+                    categoryStyle(category).chip,
+                  )}
+                >
+                  {CATEGORY_LABELS[category as Category] ?? category}
                 </Link>
               ))}
             </div>
@@ -353,7 +360,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
       </dl>
 
       {/* ── Body ───────────────────────────────────────────────────────────── */}
-      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <Tabs defaultValue="overview" className="min-w-0">
           <TabsList aria-label="Server details">
             <TabsTrigger value="overview">

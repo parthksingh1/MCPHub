@@ -95,6 +95,9 @@ export function BadgeBuilder({
 
   const query = style === 'flat' ? '' : `?style=${style}`;
   const badgeUrl = `${siteUrl}/api/badge/${slug}${query}`;
+  // The preview loads from whatever host is serving this page, so it works on
+  // preview deployments and locally; the snippet keeps the canonical URL.
+  const previewUrl = `/api/badge/${slug}${query}`;
   const pageUrl = `${siteUrl}/servers/${slug}`;
   const alt = 'MCPHub Trust Score';
 
@@ -142,7 +145,7 @@ export function BadgeBuilder({
 
       <div className="bg-background flex min-h-16 items-center justify-center rounded-xl border border-dashed p-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img key={badgeUrl} src={badgeUrl} alt={`${alt} badge${name ? ` for ${name}` : ''}`} />
+        <img key={previewUrl} src={previewUrl} alt={`${alt} badge${name ? ` for ${name}` : ''}`} />
       </div>
 
       <div className="relative">

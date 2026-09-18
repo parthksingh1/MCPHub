@@ -1,12 +1,14 @@
-import { CACHE_TTL, CATEGORY_LABELS } from '@mcphub/shared';
+import { CACHE_TTL, CATEGORIES, CATEGORY_LABELS, type Category } from '@mcphub/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { PageHeader } from '@/components/page-header';
 import { cacheKey, cached } from '@/lib/cache';
 import { CATEGORY_ICON } from '@/lib/category-icons';
+import { CATEGORY_STYLE } from '@/lib/category-style';
 import { getCategoryCounts } from '@/lib/queries/servers';
 import { safeQuery } from '@/lib/safe-query';
+import { cn } from '@/lib/utils';
 
 export const revalidate = 3600;
 
@@ -43,7 +45,12 @@ export default async function CategoriesPage(): Promise<React.JSX.Element> {
     cached(cacheKey('categories'), { ttl: CACHE_TTL.category }, () => getCategoryCounts()),
   );
 
-  const sorted = [...categories].sort((a, b) => b.count - a.count);
+  // If the counts cannot be loaded, still list every category: the page stays
+  // useful, and an empty grid never gets cached for an hour.
+  const sorted: { slug: Category; count: number | null }[] =
+    categories.length > 0
+      ? [...categories].sort((a, b) => b.count - a.count)
+      : CATEGORIES.map((slug) => ({ slug, count: null }));
 
   return (
     <main className="container py-8">
@@ -61,17 +68,25 @@ export default async function CategoriesPage(): Promise<React.JSX.Element> {
             <Link
               key={category.slug}
               href={`/categories/${category.slug}`}
-              className="bg-surface hover:border-hover hover:bg-surface-hover group flex gap-4 rounded-xl border p-5 transition-colors"
+              className="bg-surface hover:border-hover hover:shadow-card-hover group flex gap-4 rounded-2xl border p-5 transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-0.5"
             >
-              <span className="bg-background text-text-muted group-hover:text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg border transition-colors">
+              <span
+                className={cn(
+                  'flex size-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset',
+                  CATEGORY_STYLE[category.slug].tile,
+                )}
+              >
                 <Icon className="size-5" aria-hidden />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h2 className="font-medium">{CATEGORY_LABELS[category.slug]}</h2>
-                  <span className="text-text-muted text-xs tabular-nums">
-                    {category.count} {category.count === 1 ? 'server' : 'servers'}
-                  </span>
+                  <h2 className="font-semibold tracking-tight">{CATEGORY_LABELS[category.slug]}</h2>
+                  {category.count !== null && (
+                    <span className="text-text-muted text-xs tabular-nums">
+                      {category.count.toLocaleString()}{' '}
+                      {category.count === 1 ? 'server' : 'servers'}
+                    </span>
+                  )}
                 </div>
                 <p className="text-text-muted mt-1.5 text-sm leading-relaxed">
                   {BLURBS[category.slug] ?? ''}
