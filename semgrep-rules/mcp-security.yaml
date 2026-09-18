@@ -159,7 +159,7 @@ rules:
       (?i)(api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token|password|client[_-]?secret)\s*[:=]\s*["'](?!.*(?:process\.env|os\.environ|\$\{|<|your|example|placeholder|xxx|change[_-]?me|test))[A-Za-z0-9_\-]{20,}["']
 
   - id: mcp-known-token-format
-    languages: [javascript, typescript, python, generic]
+    languages: [regex]
     severity: ERROR
     message: >-
       A live credential in a recognised provider format is present in source.
