@@ -154,7 +154,7 @@ export function ServerActions({
             'inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium',
             'transition-all duration-200 active:scale-[0.98] disabled:opacity-50',
             favorited
-              ? 'border-accent/40 bg-accent/10 text-accent'
+              ? 'border-foreground bg-surface-hover text-foreground'
               : 'bg-surface hover:border-hover hover:bg-surface-hover',
           )}
         >

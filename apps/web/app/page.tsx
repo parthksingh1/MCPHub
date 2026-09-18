@@ -1,23 +1,5 @@
-import { CACHE_TTL, CATEGORY_LABELS, type Category } from '@mcphub/shared';
-import {
-  ArrowRight,
-  Boxes,
-  Braces,
-  Cloud,
-  CreditCard,
-  Database,
-  FileText,
-  Globe,
-  LineChart,
-  MessageSquare,
-  Palette,
-  Rocket,
-  Search,
-  ShieldCheck,
-  Sparkles,
-  Terminal,
-  Wrench,
-} from 'lucide-react';
+import { CACHE_TTL, CATEGORY_LABELS } from '@mcphub/shared';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { HeroPanel } from '@/components/hero-panel';
@@ -25,6 +7,7 @@ import { ServerCard } from '@/components/server-card';
 import { SponsoredStrip } from '@/components/sponsored-strip';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
+import { CATEGORY_ICON } from '@/lib/category-icons';
 import { formatRelativeTime } from '@/lib/format';
 import {
   getCategoryCounts,
@@ -40,26 +23,6 @@ import { SPOTLIGHT_STRIP_SLOTS } from '@/lib/spotlight';
 
 /** Regenerate at most once a minute; the homepage is mostly aggregate data. */
 export const revalidate = 60;
-
-/** Icons for the category grid, keyed by category slug. */
-const CATEGORY_ICON: Record<Category, typeof Database> = {
-  database: Database,
-  browser: Globe,
-  communication: MessageSquare,
-  devtools: Wrench,
-  devops: Rocket,
-  ai: Sparkles,
-  productivity: FileText,
-  files: Boxes,
-  search: Search,
-  finance: CreditCard,
-  cloud: Cloud,
-  security: ShieldCheck,
-  monitoring: LineChart,
-  design: Palette,
-  data: Braces,
-  other: Terminal,
-};
 
 /** The four Trust Score components, for the explainer strip. */
 const TRUST_PARTS = [
@@ -283,16 +246,16 @@ export default async function HomePage(): Promise<React.JSX.Element> {
               <Link
                 key={category.slug}
                 href={`/categories/${category.slug}`}
-                className="gradient-border bg-surface hover:bg-surface-hover group relative flex items-center gap-3 rounded-xl border p-4 transition-all duration-300 ease-out hover:-translate-y-0.5"
+                className="bg-surface hover:border-hover hover:bg-surface-hover group relative flex items-center gap-3 rounded-xl border p-4 transition-colors"
               >
-                <span className="border-border bg-background text-text-muted group-hover:text-accent flex size-9 shrink-0 items-center justify-center rounded-lg border transition-colors">
+                <span className="border-border bg-background text-text-muted group-hover:text-foreground flex size-9 shrink-0 items-center justify-center rounded-lg border transition-colors">
                   <Icon className="size-4" aria-hidden />
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium tracking-tight">
                     {CATEGORY_LABELS[category.slug]}
                   </span>
-                  <span className="text-text-muted block font-mono text-[11px] tabular-nums">
+                  <span className="text-text-muted block font-mono text-xs tabular-nums">
                     {category.count}
                   </span>
                 </span>

@@ -190,7 +190,7 @@
   /*
    * ── Gradient hairline border ──────────────────────────────────────────────
    *
-   * A 1px border that fades from accent to transparent, drawn with a masked
+   * A 1px border that fades from the hover border to transparent, drawn with a masked
    * pseudo-element. `border-image` cannot do rounded corners and an inset
    * box-shadow cannot do a gradient, so the mask compositing trick is the only
    * way to get this without an extra wrapper element.
@@ -351,10 +351,10 @@
   .range-accent::-webkit-slider-thumb {
     @apply size-4 appearance-none rounded-full border-2;
     margin-top: -5px;
-    background: hsl(var(--accent));
+    background: hsl(var(--text-primary));
     border-color: hsl(var(--background));
     box-shadow:
-      0 0 0 1px hsl(var(--accent) / 0.4),
+      0 0 0 1px hsl(var(--text-primary) / 0.4),
       0 2px 6px rgb(0 0 0 / 0.4);
     transition: transform 150ms ease-out;
   }
@@ -370,7 +370,7 @@
 
   .range-accent::-moz-range-thumb {
     @apply size-4 rounded-full border-2;
-    background: hsl(var(--accent));
+    background: hsl(var(--text-primary));
     border-color: hsl(var(--background));
   }
 
@@ -384,8 +384,8 @@
   }
 
   .checkbox-accent:checked {
-    background: hsl(var(--accent));
-    border-color: hsl(var(--accent));
+    background: hsl(var(--text-primary));
+    border-color: hsl(var(--text-primary));
   }
 
   /* The tick is drawn rather than an image, so it inherits crisp rendering
@@ -397,7 +397,7 @@
     top: 1px;
     width: 4px;
     height: 8px;
-    border: solid hsl(var(--accent-foreground));
+    border: solid hsl(var(--background));
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }

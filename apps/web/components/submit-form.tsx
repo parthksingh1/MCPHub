@@ -149,7 +149,7 @@ export function SubmitForm({ className }: SubmitFormProps): React.JSX.Element {
                 className={cn(
                   'rounded-sm border px-2 py-1 text-xs transition-colors duration-200',
                   active
-                    ? 'border-accent/40 bg-accent/10 text-accent'
+                    ? 'border-foreground bg-foreground text-background'
                     : 'text-text-secondary hover:border-hover hover:bg-surface-hover',
                   full && 'cursor-not-allowed opacity-40',
                 )}

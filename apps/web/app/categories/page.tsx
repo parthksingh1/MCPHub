@@ -2,7 +2,9 @@ import { CACHE_TTL, CATEGORY_LABELS } from '@mcphub/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { PageHeader } from '@/components/page-header';
 import { cacheKey, cached } from '@/lib/cache';
+import { CATEGORY_ICON } from '@/lib/category-icons';
 import { getCategoryCounts } from '@/lib/queries/servers';
 import { safeQuery } from '@/lib/safe-query';
 
@@ -44,28 +46,40 @@ export default async function CategoriesPage(): Promise<React.JSX.Element> {
   const sorted = [...categories].sort((a, b) => b.count - a.count);
 
   return (
-    <main className="container py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Categories</h1>
-      <p className="text-text-secondary mt-2 max-w-prose">
-        Browse MCP servers by what they connect to.
-      </p>
+    <main className="container py-8">
+      <PageHeader
+        crumbs={[{ label: 'Categories' }]}
+        eyebrow="Directory"
+        title="Categories"
+        description="Browse MCP servers by what they connect to."
+      />
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {sorted.map((category) => (
-          <Link
-            key={category.slug}
-            href={`/categories/${category.slug}`}
-            className="bg-surface hover:border-hover hover:bg-surface-hover group rounded-lg border p-5 transition-all duration-200 ease-out hover:-translate-y-0.5"
-          >
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="font-medium">{CATEGORY_LABELS[category.slug]}</h2>
-              <span className="text-text-muted text-xs tabular-nums">{category.count}</span>
-            </div>
-            <p className="text-text-muted mt-2 text-sm leading-relaxed">
-              {BLURBS[category.slug] ?? ''}
-            </p>
-          </Link>
-        ))}
+      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {sorted.map((category) => {
+          const Icon = CATEGORY_ICON[category.slug];
+          return (
+            <Link
+              key={category.slug}
+              href={`/categories/${category.slug}`}
+              className="bg-surface hover:border-hover hover:bg-surface-hover group flex gap-4 rounded-xl border p-5 transition-colors"
+            >
+              <span className="bg-background text-text-muted group-hover:text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg border transition-colors">
+                <Icon className="size-5" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2 className="font-medium">{CATEGORY_LABELS[category.slug]}</h2>
+                  <span className="text-text-muted text-xs tabular-nums">
+                    {category.count} {category.count === 1 ? 'server' : 'servers'}
+                  </span>
+                </div>
+                <p className="text-text-muted mt-1.5 text-sm leading-relaxed">
+                  {BLURBS[category.slug] ?? ''}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </main>
   );

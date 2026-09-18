@@ -1,0 +1,40 @@
+import type { Category } from '@mcphub/shared';
+import {
+  Boxes,
+  Braces,
+  Cloud,
+  CreditCard,
+  Database,
+  FileText,
+  Globe,
+  LineChart,
+  MessageSquare,
+  Palette,
+  Rocket,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Terminal,
+  Wrench,
+  type LucideIcon,
+} from 'lucide-react';
+
+/** One icon per category, shared by every category grid on the site. */
+export const CATEGORY_ICON: Record<Category, LucideIcon> = {
+  database: Database,
+  browser: Globe,
+  communication: MessageSquare,
+  devtools: Wrench,
+  devops: Rocket,
+  ai: Sparkles,
+  productivity: FileText,
+  files: Boxes,
+  search: Search,
+  finance: CreditCard,
+  cloud: Cloud,
+  security: ShieldCheck,
+  monitoring: LineChart,
+  design: Palette,
+  data: Braces,
+  other: Terminal,
+};

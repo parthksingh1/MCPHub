@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { TrustScoreRing } from '@/components/trust-score-ring';
+import { Badge } from '@/components/ui/badge';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -63,10 +64,10 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
       <Link
         href={`/servers/${server.slug}`}
         className={cn(
-          'gradient-border group relative flex h-full flex-col overflow-hidden rounded-xl',
+          'group relative flex h-full flex-col overflow-hidden rounded-xl',
           'bg-surface shadow-card border',
-          'transition-[transform,box-shadow,border-color] duration-300 ease-out',
-          'hover:shadow-card-hover hover:-translate-y-1',
+          'transition-[box-shadow,border-color,background-color] duration-200 ease-out',
+          'hover:border-hover hover:shadow-card-hover',
           server.deprecated && 'opacity-55',
         )}
       >
@@ -85,7 +86,7 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
             )}
 
             <div className="min-w-0">
-              <h3 className="flex items-center gap-1.5 truncate font-medium leading-tight tracking-tight">
+              <h3 className="flex items-center gap-1.5 truncate font-medium leading-tight tracking-tight group-hover:underline group-hover:underline-offset-2">
                 <span className="truncate">{server.name}</span>
                 {server.verified && (
                   <BadgeCheck
@@ -95,7 +96,7 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
                 )}
               </h3>
               {server.authorName && (
-                <p className="text-text-muted mt-0.5 truncate font-mono text-[11px]">
+                <p className="text-text-muted mt-0.5 truncate font-mono text-xs">
                   {server.authorName}
                 </p>
               )}
@@ -110,27 +111,14 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
         </p>
 
         <div className="flex flex-wrap items-center gap-1.5 px-5 pt-4">
-          {server.isOfficial && (
-            <span className="border-accent/25 bg-accent/10 text-accent rounded-md border px-1.5 py-0.5 text-[11px] font-medium">
-              Official
-            </span>
-          )}
-          {server.deprecated && (
-            <span className="border-danger/25 bg-danger/10 text-danger rounded-md border px-1.5 py-0.5 text-[11px] font-medium">
-              Deprecated
-            </span>
-          )}
+          {server.isOfficial && <Badge variant="accent">Official</Badge>}
+          {server.deprecated && <Badge variant="danger">Deprecated</Badge>}
           {server.categories.slice(0, 2).map((category) => (
-            <span
-              key={category}
-              className="text-text-muted border-border rounded-md border px-1.5 py-0.5 text-[11px]"
-            >
-              {CATEGORY_LABELS[category as Category] ?? category}
-            </span>
+            <Badge key={category}>{CATEGORY_LABELS[category as Category] ?? category}</Badge>
           ))}
         </div>
 
-        <div className="text-text-muted mt-4 flex items-center gap-3 border-t px-5 py-3 text-[11px]">
+        <div className="text-text-muted mt-4 flex items-center gap-3 border-t px-5 py-3 text-xs">
           <span className="inline-flex items-center gap-1">
             <Star className="size-3" aria-hidden />
             <span className="tabular-nums">{formatCount(server.githubStars)}</span>
