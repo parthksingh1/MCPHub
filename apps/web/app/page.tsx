@@ -22,6 +22,7 @@ import Link from 'next/link';
 
 import { HeroPanel } from '@/components/hero-panel';
 import { ServerCard } from '@/components/server-card';
+import { SponsoredStrip } from '@/components/sponsored-strip';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
 import { formatRelativeTime } from '@/lib/format';
@@ -33,7 +34,9 @@ import {
   getTopServers,
   getTrendingServers,
 } from '@/lib/queries/servers';
+import { getActiveSponsors } from '@/lib/queries/spotlight';
 import { safeQuery } from '@/lib/safe-query';
+import { SPOTLIGHT_STRIP_SLOTS } from '@/lib/spotlight';
 
 /** Regenerate at most once a minute; the homepage is mostly aggregate data. */
 export const revalidate = 60;
@@ -131,7 +134,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     lastIndexedAt: null,
   };
 
-  const [stats, categories, featured, recent, trending] = await Promise.all([
+  const [stats, categories, featured, recent, trending, sponsors] = await Promise.all([
     safeQuery('stats', emptyStats, () =>
       cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
     ),
@@ -152,6 +155,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     safeQuery('trending', [], () =>
       cached(cacheKey('trending'), { ttl: CACHE_TTL.list }, () => getTrendingServers(6)),
     ),
+    safeQuery('spotlight', [], () => cached(cacheKey('spotlight'), { ttl: 60 }, getActiveSponsors)),
   ]);
 
   const topCategories = [...categories].sort((a, b) => b.count - a.count).slice(0, 8);
@@ -231,6 +235,13 @@ export default async function HomePage(): Promise<React.JSX.Element> {
         </div>
       </section>
 
+      {/* ── Sponsored (Spotlight) — labelled, separate from every ranking ── */}
+      {sponsors.length > 0 && (
+        <div className="container pb-12">
+          <SponsoredStrip sponsors={sponsors.slice(0, SPOTLIGHT_STRIP_SLOTS)} />
+        </div>
+      )}
+
       <div className="container">
         <div className="rule-fade" />
       </div>
@@ -242,8 +253,8 @@ export default async function HomePage(): Promise<React.JSX.Element> {
             eyebrow="Ranked by Trust Score"
             title="Highest rated"
             detail="Scoring best across maintenance, popularity, security, and quality."
-            href="/servers?sort=trust"
-            linkLabel="View all"
+            href="/rankings"
+            linkLabel="Full rankings"
           />
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

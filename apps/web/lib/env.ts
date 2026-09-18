@@ -35,6 +35,15 @@ const serverEnvSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: optionalString,
   RESEND_API_KEY: optionalString,
   SENTRY_DSN: optionalString,
+  /** Spotlight is disabled unless all three Razorpay values are set. */
+  RAZORPAY_KEY_ID: optionalString,
+  RAZORPAY_KEY_SECRET: optionalString,
+  RAZORPAY_WEBHOOK_SECRET: optionalString,
+  /** Rupees per US dollar for INR Spotlight payments. Review it now and then. */
+  SPOTLIGHT_USD_INR: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.coerce.number().positive().default(85),
+  ),
   NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
   LAUNCH_MODE: z
     .enum(['true', 'false'])
