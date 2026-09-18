@@ -114,14 +114,21 @@ export function SiteHeader(): React.JSX.Element {
       )}
     >
       <div className="container flex h-14 items-center gap-2">
-        <Link href="/" className="mr-3 shrink-0" aria-label="MCPHub home">
+        <Link href="/" className="mr-4 flex h-9 shrink-0 items-center" aria-label="MCPHub home">
           <Logo />
         </Link>
 
         <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main">
-          {PRIMARY_NAV.map((group) => (
-            <NavDropdown key={group.label} group={group} pathname={pathname} />
-          ))}
+          <Link
+            href="/servers"
+            aria-current={isActive(pathname, '/servers') ? 'page' : undefined}
+            className={cn(
+              'hover:bg-surface-hover hover:text-foreground inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition-colors',
+              isActive(pathname, '/servers') ? 'text-foreground' : 'text-text-secondary',
+            )}
+          >
+            Servers
+          </Link>
           <Link
             href="/rankings"
             aria-current={isActive(pathname, '/rankings') ? 'page' : undefined}
@@ -132,6 +139,9 @@ export function SiteHeader(): React.JSX.Element {
           >
             Rankings
           </Link>
+          {PRIMARY_NAV.map((group) => (
+            <NavDropdown key={group.label} group={group} pathname={pathname} />
+          ))}
           <Link
             href={SPOTLIGHT_LINK.href}
             aria-current={isActive(pathname, SPOTLIGHT_LINK.href) ? 'page' : undefined}

@@ -34,8 +34,8 @@ export function LogoMark({ className }: LogoProps): React.JSX.Element {
 export function Logo({ className }: LogoProps): React.JSX.Element {
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
-      <LogoMark />
-      <span className="text-[15px] font-semibold tracking-tight">
+      <LogoMark className="size-7" />
+      <span className="text-base font-semibold leading-none tracking-tight">
         MCP<span className="text-text-muted">Hub</span>
       </span>
     </span>
