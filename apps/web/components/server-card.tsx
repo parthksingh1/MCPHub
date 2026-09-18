@@ -1,13 +1,11 @@
-'use client';
-
 import { CATEGORY_LABELS, type Category } from '@mcphub/shared';
-import { motion, useReducedMotion } from 'framer-motion';
 import { BadgeCheck, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Badge } from '@/components/ui/badge';
+import { categoryStyle } from '@/lib/category-style';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -45,32 +43,38 @@ export interface ServerCardProps {
  * therefore presentational here and filterable on the browse page instead.
  */
 export function ServerCard({ server, index = 0, className }: ServerCardProps): React.JSX.Element {
-  const reduceMotion = useReducedMotion();
+  const primary = server.categories[0];
+  const hue = primary ? categoryStyle(primary) : null;
 
   return (
-    <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{
-        duration: reduceMotion ? 0 : 0.4,
-        // A 40ms stagger reads as the list settling into place; much more and
-        // it starts to feel like the page is slow.
-        delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.32),
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className={className}
+    // CSS rather than a scroll-triggered animation: the card is visible the
+    // moment the page paints, even without JavaScript, to crawlers, and in
+    // full-page captures. A short stagger still lets a grid settle in.
+    <article
+      className={cn('animate-fade-up min-w-0 motion-reduce:animate-none', className)}
+      style={{ animationDelay: `${Math.min(index * 40, 320)}ms` }}
     >
       <Link
         href={`/servers/${server.slug}`}
         className={cn(
-          'group relative flex h-full flex-col overflow-hidden rounded-xl',
+          'group relative flex h-full flex-col overflow-hidden rounded-2xl',
           'bg-surface shadow-card border',
-          'transition-[box-shadow,border-color,background-color] duration-200 ease-out',
-          'hover:border-hover hover:shadow-card-hover',
+          'transition-[transform,box-shadow,border-color] duration-200 ease-out',
+          'hover:border-hover hover:shadow-card-hover hover:-translate-y-0.5',
           server.deprecated && 'opacity-55',
         )}
       >
+        {/* Category colour along the top edge: scannable, never the only cue. */}
+        {hue && (
+          <span
+            aria-hidden
+            className={cn(
+              'absolute inset-x-0 top-0 h-0.5 opacity-70 transition-opacity group-hover:opacity-100',
+              hue.dot,
+            )}
+          />
+        )}
+
         <div className="relative flex items-start justify-between gap-4 p-5 pb-4">
           <div className="flex min-w-0 items-center gap-3">
             {server.authorAvatar ? (
@@ -114,13 +118,21 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
           {server.isOfficial && <Badge variant="accent">Official</Badge>}
           {server.deprecated && <Badge variant="danger">Deprecated</Badge>}
           {server.categories.slice(0, 2).map((category) => (
-            <Badge key={category}>{CATEGORY_LABELS[category as Category] ?? category}</Badge>
+            <span
+              key={category}
+              className={cn(
+                'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium',
+                categoryStyle(category).chip,
+              )}
+            >
+              {CATEGORY_LABELS[category as Category] ?? category}
+            </span>
           ))}
         </div>
 
         <div className="text-text-muted mt-4 flex items-center gap-3 border-t px-5 py-3 text-xs">
           <span className="inline-flex items-center gap-1">
-            <Star className="size-3" aria-hidden />
+            <Star className="size-3 fill-amber-400 text-amber-400" aria-hidden />
             <span className="tabular-nums">{formatCount(server.githubStars)}</span>
             <span className="sr-only">GitHub stars</span>
           </span>
@@ -139,7 +151,7 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
           </span>
         </div>
       </Link>
-    </motion.article>
+    </article>
   );
 }
 

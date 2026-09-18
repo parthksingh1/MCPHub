@@ -13,6 +13,7 @@ import { useCallback, useState, useTransition } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CATEGORY_STYLE } from '@/lib/category-style';
 import { cn } from '@/lib/utils';
 
 /** Props for {@link BrowseFilters}. */
@@ -150,6 +151,13 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
                         : 'text-text-secondary hover:border-hover hover:bg-surface-hover',
                     )}
                   >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'mr-1.5 inline-block size-1.5 rounded-full align-middle',
+                        CATEGORY_STYLE[category.slug].dot,
+                      )}
+                    />
                     {CATEGORY_LABELS[category.slug]}
                     <span className="ml-1.5 tabular-nums opacity-60">{category.count}</span>
                   </button>
