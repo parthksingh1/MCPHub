@@ -6,11 +6,11 @@
 
 Smithery lists them. MCPHub rates, scans, and vets them.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Stars](https://img.shields.io/github/stars/parthksingh1/MCPHub?style=flat&color=7c3aed)](https://github.com/parthksingh1/MCPHub/stargazers)
-[![CI](https://img.shields.io/badge/CI-passing-3fb950.svg)](./.github/workflows/ci.yml)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-7c3aed.svg)](./CONTRIBUTING.md)
-[![$0/month](https://img.shields.io/badge/hosting-%240%2Fmonth-3fb950.svg)](./DEPLOYMENT.md)
+[![CI](https://github.com/parthksingh1/MCPHub/actions/workflows/ci.yml/badge.svg)](https://github.com/parthksingh1/MCPHub/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e.svg)](./LICENSE)
+[![Stars](https://img.shields.io/github/stars/parthksingh1/MCPHub?style=flat&color=22c55e)](https://github.com/parthksingh1/MCPHub/stargazers)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-22c55e.svg)](./CONTRIBUTING.md)
+[![Hosting: $0/month](https://img.shields.io/badge/hosting-%240%2Fmonth-555.svg)](#architecture)
 
 </div>
 
@@ -56,7 +56,7 @@ whether it looks carefully built — as one number you can sort by.
 - 📊 **Trust Score** — 0–100 from four transparent, open-source components
 - ⚡ **One-click install** — the exact command for each of six MCP clients,
   plus a downloadable config file
-- 🏷️ **Embeddable badges** — `![Trust Score](https://your-site/api/badge/<slug>)`
+- 🏷️ **Embeddable badges** — live Trust Score badges in three styles (`flat`, `flat-square`, `for-the-badge`); snippet builder at `/badges`
 - 🔌 **Public API** — everything the site uses, documented and open
 - 🌓 **Dark and light** — full parity, not an afterthought
 
@@ -137,9 +137,11 @@ server anywhere in the stack, which is what makes $0/month achievable.
 
 ## Self-hosting
 
-See **[DEPLOYMENT.md](./DEPLOYMENT.md)** — a step-by-step walkthrough of
-Supabase, Upstash, Vercel, GitHub Actions, and Cloudflare, all on free tiers,
-in about 45 minutes.
+Everything runs on free tiers: Supabase (Postgres + auth), Upstash (Redis),
+Vercel (web), GitHub Actions (crawl, scan, refresh), and Cloudflare (DNS).
+Copy `.env.example` to `.env`, fill in each service's keys, run the database
+migrations, then deploy `apps/web` to Vercel and add the same variables as
+GitHub Actions secrets for the workers.
 
 ## Roadmap
 
