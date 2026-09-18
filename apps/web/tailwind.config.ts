@@ -50,9 +50,11 @@ const config: Config = {
         warn: 'hsl(var(--warn) / <alpha-value>)',
         danger: 'hsl(var(--danger) / <alpha-value>)',
         // shadcn/ui compatibility aliases.
+        // Primary actions are solid foreground-on-background, not a brand
+        // colour: it reads as confident rather than decorative.
         primary: {
-          DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
-          foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
+          DEFAULT: 'hsl(var(--text-primary) / <alpha-value>)',
+          foreground: 'hsl(var(--background) / <alpha-value>)',
         },
         secondary: {
           DEFAULT: 'hsl(var(--surface-hover) / <alpha-value>)',
@@ -105,9 +107,8 @@ const config: Config = {
       },
       boxShadow: {
         card: '0 1px 2px 0 rgb(0 0 0 / 0.14), 0 12px 32px -16px rgb(0 0 0 / 0.5)',
-        'card-hover':
-          '0 1px 2px 0 rgb(0 0 0 / 0.18), 0 20px 48px -20px rgb(0 0 0 / 0.6), 0 0 60px -30px hsl(var(--accent) / 0.5)',
-        glow: '0 0 0 1px hsl(var(--accent) / 0.35), 0 10px 40px -10px hsl(var(--accent) / 0.45)',
+        'card-hover': '0 1px 2px 0 rgb(0 0 0 / 0.18), 0 16px 40px -20px rgb(0 0 0 / 0.55)',
+        glow: '0 0 0 1px var(--border-hover), 0 8px 24px -12px rgb(0 0 0 / 0.5)',
         'glow-sm': '0 0 24px -6px hsl(var(--accent) / 0.5)',
         ring: '0 0 28px -8px currentColor',
       },

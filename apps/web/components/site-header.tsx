@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { AuthButton } from '@/components/auth-button';
+import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { REPO_URL } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -65,11 +66,7 @@ export function SiteHeader(): React.JSX.Element {
     >
       <div className="container flex h-14 items-center gap-4">
         <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
-          <span
-            className="from-accent-from to-accent-to inline-block size-5 rounded bg-gradient-to-br"
-            aria-hidden
-          />
-          MCPHub
+          <Logo />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">

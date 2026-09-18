@@ -307,7 +307,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
                     <dt className="text-text-secondary text-sm">{part.name}</dt>
                     <dd className="bg-surface-hover h-1.5 overflow-hidden rounded-full">
                       <div
-                        className="from-accent-from to-accent-to h-full rounded-full bg-gradient-to-r"
+                        className="bg-foreground h-full rounded-full"
                         style={{ width: `${(part.value / 25) * 100}%` }}
                       />
                     </dd>

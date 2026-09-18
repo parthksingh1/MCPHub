@@ -70,13 +70,6 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
           server.deprecated && 'opacity-55',
         )}
       >
-        {/* A soft accent bloom that only appears on hover, anchored to the
-            score so the eye is drawn to the number rather than the whole card. */}
-        <span
-          aria-hidden
-          className="from-accent/[0.07] pointer-events-none absolute -right-16 -top-16 size-40 rounded-full bg-gradient-to-br to-transparent opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-        />
-
         <div className="relative flex items-start justify-between gap-4 p-5 pb-4">
           <div className="flex min-w-0 items-center gap-3">
             {server.authorAvatar ? (

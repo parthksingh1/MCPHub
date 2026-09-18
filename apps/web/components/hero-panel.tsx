@@ -66,12 +66,6 @@ export function HeroPanel({ servers, className }: HeroPanelProps): React.JSX.Ele
       transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
       className={cn('relative', className)}
     >
-      {/* Ambient bloom behind the panel, tinted to the brand accent. */}
-      <div
-        aria-hidden
-        className="from-accent/20 to-accent-to/10 absolute -inset-6 rounded-[2rem] bg-gradient-to-br via-transparent opacity-60 blur-3xl"
-      />
-
       <div className="panel shadow-card relative overflow-hidden rounded-2xl">
         {/* Window chrome — grounds the panel as a real interface. */}
         <div className="flex items-center gap-2 border-b px-4 py-3">

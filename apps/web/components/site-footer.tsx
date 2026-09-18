@@ -1,6 +1,7 @@
 import { CATEGORIES, CATEGORY_LABELS } from '@mcphub/shared';
 import Link from 'next/link';
 
+import { Logo } from '@/components/logo';
 import { CONTRIBUTING_URL, REPO_URL } from '@/lib/site';
 
 /** Footer link groups, kept declarative so the layout stays symmetrical. */
@@ -41,11 +42,7 @@ export function SiteFooter(): React.JSX.Element {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-              <span
-                className="from-accent-from to-accent-to inline-block size-5 rounded bg-gradient-to-br"
-                aria-hidden
-              />
-              MCPHub
+              <Logo />
             </Link>
             <p className="text-text-muted mt-3 max-w-xs text-sm leading-relaxed">
               The trusted directory for Model Context Protocol servers. Every server is scored,

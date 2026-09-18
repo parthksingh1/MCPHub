@@ -13,68 +13,70 @@
   :root {
     color-scheme: light;
 
-    --background: 240 20% 99%; /* #fcfcfd */
-    --surface: 0 0% 100%; /* #ffffff */
-    --surface-hover: 240 5% 97%;
+    /* Neutral zinc surfaces. No hue in the chrome: colour is reserved for
+       meaning (trust bands, status) and the single brand accent. */
+    --background: 0 0% 98%; /* #fafafa */
+    --surface: 0 0% 100%;
+    --surface-hover: 240 5% 96%;
 
-    --text-primary: 240 6% 6%;
-    --text-primary-raw: #0c0c0f;
-    --text-secondary: rgb(12 12 15 / 0.66);
-    --text-muted: rgb(12 12 15 / 0.42);
+    --text-primary: 240 10% 4%; /* #09090b */
+    --text-primary-raw: #09090b;
+    /* Muted text at >=56% keeps small labels above WCAG AA 4.5:1 on white. */
+    --text-secondary: rgb(9 9 11 / 0.74);
+    --text-muted: rgb(9 9 11 / 0.58);
 
-    --border: rgb(12 12 15 / 0.08);
-    --border-hover: rgb(12 12 15 / 0.16);
+    --border: rgb(9 9 11 / 0.09);
+    --border-hover: rgb(9 9 11 / 0.18);
 
-    --accent: 263 83% 55%; /* violet */
-    --accent-to: 217 91% 55%; /* blue */
+    /* Brand accent: "run green". Darker in light mode so text on white passes. */
+    --accent: 142 72% 29%; /* #15803d */
+    --accent-to: 142 72% 29%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 160 84% 34%;
-    --warn: 33 92% 44%;
-    --danger: 350 82% 52%;
+    --success: 142 72% 29%;
+    --warn: 32 95% 40%;
+    --danger: 0 72% 46%;
 
-    /* Ambient light: a wash of accent behind the page, barely perceptible. */
-    --glow-a: 263 83% 55%;
-    --glow-b: 217 91% 55%;
-    --glow-strength: 0.07;
+    --glow-a: 0 0% 0%;
+    --glow-b: 0 0% 0%;
+    --glow-strength: 0.025;
 
-    /* Hairline grid drawn behind everything. */
-    --grid-line: rgb(12 12 15 / 0.045);
-    --grid-size: 64px;
+    --grid-line: rgb(9 9 11 / 0.04);
+    --grid-size: 72px;
 
-    --noise-opacity: 0.015;
+    --noise-opacity: 0;
   }
 
   .dark {
     color-scheme: dark;
 
-    --background: 240 8% 4%; /* #0a0a0b */
-    --surface: 240 9% 7%;
-    --surface-hover: 240 8% 10%;
+    --background: 240 10% 4%; /* #09090b */
+    --surface: 240 6% 7%; /* #111113 */
+    --surface-hover: 240 4% 11%;
 
-    --text-primary: 0 0% 100%;
-    --text-primary-raw: #ffffff;
-    --text-secondary: rgb(255 255 255 / 0.68);
-    --text-muted: rgb(255 255 255 / 0.42);
+    --text-primary: 0 0% 98%;
+    --text-primary-raw: #fafafa;
+    --text-secondary: rgb(250 250 250 / 0.74);
+    --text-muted: rgb(250 250 250 / 0.56);
 
-    --border: rgb(255 255 255 / 0.07);
-    --border-hover: rgb(255 255 255 / 0.16);
+    --border: rgb(250 250 250 / 0.08);
+    --border-hover: rgb(250 250 250 / 0.17);
 
-    --accent: 263 85% 66%;
-    --accent-to: 214 95% 66%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 142 71% 45%; /* #22c55e */
+    --accent-to: 142 71% 45%;
+    --accent-foreground: 240 10% 4%;
 
-    --success: 152 68% 50%;
-    --warn: 38 95% 60%;
-    --danger: 350 90% 66%;
+    --success: 142 71% 45%;
+    --warn: 38 92% 56%;
+    --danger: 0 84% 64%;
 
-    --glow-a: 266 90% 60%;
-    --glow-b: 214 95% 58%;
-    --glow-strength: 0.16;
+    --glow-a: 0 0% 100%;
+    --glow-b: 0 0% 100%;
+    --glow-strength: 0.045;
 
-    --grid-line: rgb(255 255 255 / 0.032);
+    --grid-line: rgb(250 250 250 / 0.028);
 
-    --noise-opacity: 0.025;
+    --noise-opacity: 0.018;
   }
 
   * {
@@ -203,12 +205,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--accent) / 0.55),
-      hsl(var(--accent-to) / 0.28) 42%,
-      transparent 72%
-    );
+    background: linear-gradient(160deg, var(--border-hover), transparent 60%);
     mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -227,11 +224,9 @@
     opacity: 1;
   }
 
-  /** Violet → blue text gradient, used sparingly on hero words only. */
+  /** Emphasis inside a headline: muted rather than coloured, the Vercel/Linear way. */
   .text-gradient {
-    @apply from-accent-from to-accent-to bg-gradient-to-br bg-clip-text text-transparent;
-    /* Slight overshoot stops the descenders clipping in some browsers. */
-    padding-bottom: 0.06em;
+    color: var(--text-muted);
   }
 
   /** A monospace eyebrow label above a section heading. */

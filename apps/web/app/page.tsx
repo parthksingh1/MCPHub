@@ -181,11 +181,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
             </Link>
 
             <h1 className="text-display tracking-display mt-7 max-w-[13ch] text-balance">
-              The trusted directory for{' '}
-              <span className="text-gradient animate-gradient-drift bg-[length:200%_auto]">
-                MCP servers
-              </span>
-              .
+              The trusted directory for <span className="text-gradient">MCP servers</span>.
             </h1>
 
             <p className="text-text-secondary mt-6 max-w-[46ch] text-lg leading-relaxed">
@@ -298,11 +294,6 @@ export default async function HomePage(): Promise<React.JSX.Element> {
       {/* ── Trust Score explainer ────────────────────────────────────────── */}
       <section className="container py-16">
         <div className="panel relative overflow-hidden rounded-2xl p-8 sm:p-12">
-          <div
-            aria-hidden
-            className="from-accent/[0.08] pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-gradient-to-br to-transparent blur-3xl"
-          />
-
           <div className="relative grid gap-12 lg:grid-cols-[1fr_1.3fr]">
             <div>
               <p className="eyebrow">Open algorithm</p>

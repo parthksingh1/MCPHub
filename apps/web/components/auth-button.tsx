@@ -125,7 +125,7 @@ export function AuthButton({
           'transition-all duration-200 ease-out active:scale-[0.98] disabled:opacity-50',
           variant === 'compact'
             ? 'bg-surface hover:border-hover hover:bg-surface-hover h-8 border px-3'
-            : 'from-accent-from to-accent-to text-accent-foreground h-11 w-full bg-gradient-to-b px-6 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.18)] hover:brightness-110',
+            : 'bg-foreground text-background hover:bg-foreground/90 h-11 w-full px-6',
           className,
         )}
       >
