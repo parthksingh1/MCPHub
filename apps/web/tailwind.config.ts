@@ -130,6 +130,14 @@ const config: Config = {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
         },
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
         'pulse-ring': {
           '0%, 100%': { opacity: '0.5', transform: 'scale(1)' },
           '50%': { opacity: '0.15', transform: 'scale(1.6)' },
@@ -140,6 +148,8 @@ const config: Config = {
         'fade-in': 'fade-in 400ms ease-out both',
         shimmer: 'shimmer 1.8s infinite',
         'gradient-drift': 'gradient-drift 9s ease-in-out infinite',
+        'accordion-down': 'accordion-down 200ms ease-out',
+        'accordion-up': 'accordion-up 160ms ease-out',
         'pulse-ring': 'pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       transitionTimingFunction: {
