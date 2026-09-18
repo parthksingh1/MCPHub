@@ -1,4 +1,5 @@
 import { getDatabase, servers, type ServerRow } from '@mcphub/db';
+import { AWARD_THRESHOLDS } from '@mcphub/scoring';
 import {
   CATEGORIES,
   CATEGORY_LABELS,
@@ -46,12 +47,31 @@ const summaryColumns = {
   verified: servers.verified,
   deprecated: servers.deprecated,
   updatedAt: servers.updatedAt,
+  license: servers.license,
+  // Whether the latest scan is current and clean, computed in SQL so lists
+  // never have to load full scan reports. Mirrors `isScanClean` in
+  // @mcphub/scoring exactly: unscanned or stale is never clean.
+  scanClean: sql<boolean>`coalesce(
+    (${servers.security}->>'scanned')::boolean
+    and (${servers.security}->>'lastScanAt')::timestamptz
+      > now() - make_interval(days => ${AWARD_THRESHOLDS.scanMaxAgeDays})
+    and not jsonb_path_exists(
+      ${servers.security},
+      '$.findings[*] ? (@.severity == "critical" || @.severity == "high")'
+    )
+    and coalesce((${servers.security}->'dependencyAudit'->>'critical')::int, 0)
+      + coalesce((${servers.security}->'dependencyAudit'->>'high')::int, 0) = 0,
+    false
+  )`.as('scan_clean'),
 };
+
+/** Columns in the summary that map straight onto table columns. */
+type SummaryTableColumn = Exclude<keyof typeof summaryColumns, 'scanClean'>;
 
 /** A server as rendered on a card. */
 export type ServerSummaryRow = {
-  [K in keyof typeof summaryColumns]: ServerRow[K & keyof ServerRow];
-};
+  [K in SummaryTableColumn]: ServerRow[K & keyof ServerRow];
+} & { scanClean: boolean };
 
 /** A page of servers plus the metadata the UI needs to paginate. */
 export interface ServerPage {

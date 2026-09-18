@@ -58,15 +58,16 @@ export default function TermsPage(): React.JSX.Element {
         },
         {
           id: 'trust-score',
-          title: 'What the Trust Score is — and is not',
+          title: 'What the Trust Score and badges are — and are not',
           body: (
             <>
               <p>
-                The Trust Score and security scan results are generated automatically from public
-                signals using the open <Link href="/trust-score">methodology</Link>. They are
-                opinions about observable signals, provided for information only. They are not a
-                security audit, a certification, or a statement that software is safe, and they can
-                be wrong or out of date.
+                The Trust Score, MCPHub badges (including “MCPHub Trusted”) and security scan
+                results are generated automatically from public signals using the open{' '}
+                <Link href="/trust-score">methodology</Link>. They are opinions about observable
+                signals, provided for information only. They are not a security audit, a
+                certification, or a statement that software is safe, and they can be wrong or out of
+                date.
               </p>
               <p>
                 Scores and rankings are never sold and cannot be influenced by payment. A low score

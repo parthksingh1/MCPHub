@@ -1,14 +1,15 @@
+import { computeAwards } from '@mcphub/scoring';
 import { CACHE_TTL, CATEGORY_LABELS, type Category } from '@mcphub/shared';
 import { ArrowDown, ArrowUp, Minus, Star, Trophy } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { TrustedMark } from '@/components/awards';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { TrustScoreRing } from '@/components/trust-score-ring';
+import { TrustPill } from '@/components/trust-pill';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cacheKey, cached } from '@/lib/cache';
-import { categoryStyle } from '@/lib/category-style';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import { getTrendingServers, listServers, type ServerSummaryRow } from '@/lib/queries/servers';
 import { safeQuery } from '@/lib/safe-query';
@@ -205,7 +206,11 @@ export default async function RankingsPage({
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-1.5 truncate font-medium group-hover:underline group-hover:underline-offset-2">
                             {server.name}
-                            {server.isOfficial && <Badge variant="accent">Official</Badge>}
+                            {server.isOfficial && <Badge variant="outline">Official</Badge>}
+                            {computeAwards({
+                              ...server,
+                              scanClean: server.scanClean,
+                            }).includes('trusted') && <TrustedMark />}
                           </span>
                           <span className="text-text-muted block truncate text-xs">
                             {view === 'new'
@@ -220,7 +225,7 @@ export default async function RankingsPage({
                         <span
                           className={cn(
                             'inline-flex max-w-full truncate rounded-md border px-2 py-0.5 text-xs font-medium',
-                            categoryStyle(category).chip,
+                            'text-text-secondary',
                           )}
                         >
                           {CATEGORY_LABELS[category] ?? category}
@@ -238,7 +243,7 @@ export default async function RankingsPage({
                     </td>
                     <td className="px-2 py-3 sm:px-4">
                       <div className="flex justify-end">
-                        <TrustScoreRing score={server.trustTotal} size={34} strokeWidth={3} />
+                        <TrustPill score={server.trustTotal} />
                       </div>
                     </td>
                   </tr>

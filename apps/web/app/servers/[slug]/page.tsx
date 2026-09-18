@@ -1,5 +1,5 @@
 import { parseGitHubUrl } from '@mcphub/crawler';
-import { getTrustLabel } from '@mcphub/scoring';
+import { computeAwards, getTrustLabel, isScanClean } from '@mcphub/scoring';
 import { CACHE_TTL, CATEGORY_LABELS, serverSecuritySchema, type Category } from '@mcphub/shared';
 import {
   AlertTriangle,
@@ -27,6 +27,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { AwardList, TrustedMark } from '@/components/awards';
 import { BadgeCta } from '@/components/badge-cta';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { InstallCommand } from '@/components/install-command';
@@ -40,7 +41,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cacheKey, cached } from '@/lib/cache';
-import { categoryStyle } from '@/lib/category-style';
 import { formatCount, formatDate, formatLicense, formatRelativeTime } from '@/lib/format';
 import { getRelatedServers, getServerBySlug } from '@/lib/queries/servers';
 import { SITE_URL } from '@/lib/site';
@@ -143,6 +143,18 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
   const lastScanAt = security.success ? security.data.lastScanAt : null;
   const audit = security.success ? security.data.dependencyAudit : undefined;
 
+  const awards = computeAwards({
+    trustTotal: server.trustTotal,
+    trustPrevious: server.trustPrevious,
+    lastCommitAt: server.lastCommitAt,
+    license: server.license,
+    githubStars: server.githubStars,
+    isOfficial: server.isOfficial,
+    verified: server.verified,
+    deprecated: server.deprecated,
+    scanClean: isScanClean(security.success ? security.data : null),
+  });
+
   const tools = server.capabilities?.tools ?? [];
   const primaryCategory = server.categories[0] as Category | undefined;
 
@@ -237,6 +249,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
               {server.verified && (
                 <BadgeCheck className="text-accent size-6" aria-label="Verified by MCPHub" />
               )}
+              {awards.includes('trusted') && <TrustedMark className="text-xs" />}
             </h1>
 
             <p className="text-text-muted mt-1 text-sm">
@@ -290,8 +303,8 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
                   key={category}
                   href={`/categories/${category}`}
                   className={cn(
-                    'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-80',
-                    categoryStyle(category).chip,
+                    'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors',
+                    'text-text-secondary hover:border-hover bg-surface',
                   )}
                 >
                   {CATEGORY_LABELS[category as Category] ?? category}
@@ -534,6 +547,8 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
             </h2>
             <InstallCommand commands={server.installCommands} slug={server.slug} />
           </section>
+
+          <AwardList awards={awards} />
 
           <Card>
             <CardContent className="space-y-1 p-2">

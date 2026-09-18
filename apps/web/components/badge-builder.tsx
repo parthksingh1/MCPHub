@@ -79,6 +79,7 @@ export function BadgeBuilder({
   className,
 }: BadgeBuilderProps): React.JSX.Element {
   const [input, setInput] = useState('');
+  const [kind, setKind] = useState<'score' | 'trusted'>('trusted');
   const [style, setStyle] = useState<BadgeStyle>('flat');
   const [format, setFormat] = useState<FormatId>('markdown');
 
@@ -93,13 +94,16 @@ export function BadgeBuilder({
       .replace(/[^a-z0-9-]/g, '') ||
       'your-server');
 
-  const query = style === 'flat' ? '' : `?style=${style}`;
+  const queryParams = new URLSearchParams();
+  if (kind === 'trusted') queryParams.set('type', 'trusted');
+  if (style !== 'flat') queryParams.set('style', style);
+  const query = queryParams.size > 0 ? `?${queryParams}` : '';
   const badgeUrl = `${siteUrl}/api/badge/${slug}${query}`;
   // The preview loads from whatever host is serving this page, so it works on
   // preview deployments and locally; the snippet keeps the canonical URL.
   const previewUrl = `/api/badge/${slug}${query}`;
   const pageUrl = `${siteUrl}/servers/${slug}`;
-  const alt = 'MCPHub Trust Score';
+  const alt = kind === 'trusted' ? 'MCPHub Trusted' : 'MCPHub Trust Score';
 
   const snippets: Record<FormatId, string> = {
     markdown: `[![${alt}](${badgeUrl})](${pageUrl})`,
@@ -134,6 +138,15 @@ export function BadgeBuilder({
       )}
 
       <div className="flex flex-wrap items-center gap-3">
+        <Segmented
+          label="Badge type"
+          options={[
+            { id: 'trusted', label: 'MCPHub Trusted' },
+            { id: 'score', label: 'Trust Score' },
+          ]}
+          value={kind}
+          onChange={setKind}
+        />
         <Segmented
           label="Badge style"
           options={BADGE_STYLES.map((id) => ({ id, label: id }))}

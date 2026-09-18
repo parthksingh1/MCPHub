@@ -1,7 +1,10 @@
+import { AWARD_IDS, AWARDS } from '@mcphub/scoring';
 import { TRUST_BANDS, TRUST_MAX_TOTAL } from '@mcphub/shared';
+import { ShieldCheck } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { AWARD_ICON, TrustedMark } from '@/components/awards';
 import { BadgeBuilder } from '@/components/badge-builder';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import {
@@ -14,9 +17,9 @@ import { BADGE_COLOURS, BADGE_STYLES, renderBadge } from '@/lib/badge';
 import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Trust Score badges',
+  title: 'MCPHub badges',
   description:
-    'Embed a live MCPHub Trust Score badge in your MCP server README. Three styles, Markdown, HTML and reST snippets.',
+    'The MCPHub badges an MCP server can earn — MCPHub Trusted, Security clean, Top rated and more — and how to embed them in your README.',
   alternates: { canonical: '/badges' },
 };
 
@@ -57,19 +60,80 @@ export default function BadgesPage(): React.JSX.Element {
       <Breadcrumbs items={[{ label: 'Badges' }]} />
 
       <header className="mt-6">
-        <p className="eyebrow">For maintainers</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Trust Score badges</h1>
+        <p className="eyebrow">Earned, never bought</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">MCPHub badges</h1>
         <p className="text-text-secondary mt-3 max-w-prose leading-relaxed">
-          A live badge for your README that shows your server&apos;s{' '}
+          Servers earn badges automatically when they meet public, published rules — built on the
+          open{' '}
           <Link href="/trust-score" className="underline underline-offset-2">
             Trust Score
-          </Link>
-          . It updates on its own as the score changes, and links readers to the full breakdown.
-          Free, no sign-up, no tracking.
+          </Link>{' '}
+          and our security scans. Maintainers can show them off with a live README badge that
+          updates on its own. Free, no sign-up, no tracking.
         </p>
       </header>
 
-      <section aria-labelledby="builder" className="panel mt-10 rounded-2xl p-6">
+      <section aria-labelledby="awards-title" id="awards" className="mt-10 scroll-mt-24">
+        <h2 id="awards-title" className="text-xl font-semibold tracking-tight">
+          Badges a server can earn
+        </h2>
+        <p className="text-text-muted mt-1 max-w-prose text-sm leading-relaxed">
+          Every badge is earned automatically from public data and rechecked daily. None can be
+          bought, requested, or granted by sponsorship — these are the exact rules.
+        </p>
+
+        {/* The flagship badge, given the room it deserves. */}
+        <div className="bg-surface mt-6 rounded-2xl border p-6">
+          <div className="flex flex-wrap items-start gap-4">
+            <span className="bg-accent/10 text-accent flex size-12 shrink-0 items-center justify-center rounded-xl">
+              <ShieldCheck className="size-6" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-lg font-semibold tracking-tight">{AWARDS.trusted.label}</h3>
+                <TrustedMark />
+              </div>
+              <p className="text-text-secondary mt-1.5 max-w-prose text-sm leading-relaxed">
+                The badge that answers “can I install this?”. {AWARDS.trusted.criteria}
+              </p>
+            </div>
+            <Preview
+              svg={renderBadge('mcphub', '✓ trusted', BADGE_COLOURS.high)}
+              alt="MCPHub Trusted README badge"
+            />
+          </div>
+        </div>
+
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          {AWARD_IDS.filter((id) => id !== 'trusted').map((id) => {
+            const Icon = AWARD_ICON[id];
+            return (
+              <li key={id} className="flex gap-3 rounded-xl border p-4">
+                <span className="bg-surface-hover text-text-secondary flex size-9 shrink-0 items-center justify-center rounded-lg">
+                  <Icon className="size-4" aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold">{AWARDS[id].label}</h3>
+                  <p className="text-text-muted mt-1 text-sm leading-relaxed">
+                    {AWARDS[id].criteria}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <p className="text-text-muted mt-4 text-xs leading-relaxed">
+          Badges are automated signals about public data, not a security audit or a guarantee.
+          Always review what you install. See the{' '}
+          <Link href="/legal/terms#trust-score" className="underline underline-offset-2">
+            terms
+          </Link>
+          .
+        </p>
+      </section>
+
+      <section aria-labelledby="builder" className="panel mt-12 rounded-2xl p-6">
         <h2 id="builder" className="font-semibold tracking-tight">
           Get your snippet
         </h2>
