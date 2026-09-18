@@ -222,7 +222,9 @@ await runWorker('scan', async ({ db, log }) => {
     .where(
       or(
         isNull(sql`${servers.security} ->> 'lastScanAt'`),
-        lt(sql`(${servers.security} ->> 'lastScanAt')::timestamptz`, cutoff),
+        // ISO string, not a Date: the left side is raw SQL, so drizzle cannot
+        // infer a timestamp mapping and would hand the Date to the driver as-is.
+        lt(sql`(${servers.security} ->> 'lastScanAt')::timestamptz`, cutoff.toISOString()),
       ),
     )
     // A stable ordering is what makes the shard split deterministic; without
