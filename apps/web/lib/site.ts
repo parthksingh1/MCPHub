@@ -41,3 +41,15 @@ export const SECURITY_CONTACT = process.env.NEXT_PUBLIC_SECURITY_EMAIL || null;
 
 /** Where to open a private security advisory. */
 export const SECURITY_ADVISORY_URL = `${REPO_URL}/security/advisories/new`;
+
+/**
+ * Optional general contact email, shown on the legal pages.
+ *
+ * Like {@link SECURITY_CONTACT}, off by default: the removal-request issue
+ * template is the primary channel. Set it if you want a private route for
+ * takedowns, privacy requests and Spotlight billing questions.
+ */
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || null;
+
+/** Opens a pre-filled listing removal/correction request. */
+export const REMOVAL_REQUEST_URL = `${REPO_URL}/issues/new?template=removal-request.yml`;
