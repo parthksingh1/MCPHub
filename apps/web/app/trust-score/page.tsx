@@ -2,6 +2,7 @@ import { TRUST_BANDS } from '@mcphub/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { PageHeader } from '@/components/page-header';
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { ISSUES_URL, SCORING_SRC_URL } from '@/lib/site';
 
@@ -67,14 +68,13 @@ const COMPONENTS = [
 /** The public explainer for the Trust Score. */
 export default function TrustScorePage(): React.JSX.Element {
   return (
-    <main className="container py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">How the Trust Score works</h1>
-
-      <p className="text-text-secondary mt-4 max-w-prose text-lg leading-relaxed">
-        Every server gets a single number from 0 to 100, built from four equally weighted parts of
-        25 points each. The algorithm is deterministic and open source — you can read it, run it,
-        and disagree with it.
-      </p>
+    <main className="container py-8">
+      <PageHeader
+        crumbs={[{ label: 'Trust Score' }]}
+        eyebrow="Methodology"
+        title="How the Trust Score works"
+        description="Every server gets a single number from 0 to 100, built from four equally weighted parts of 25 points each. The algorithm is deterministic and open source — you can read it, run it, and disagree with it."
+      />
 
       {/* Bands */}
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -168,7 +168,7 @@ export default function TrustScorePage(): React.JSX.Element {
             href={SCORING_SRC_URL}
             target="_blank"
             rel="noreferrer noopener"
-            className="text-accent underline underline-offset-2"
+            className="text-foreground underline underline-offset-2 hover:opacity-80"
           >
             packages/scoring
           </a>
@@ -177,7 +177,7 @@ export default function TrustScorePage(): React.JSX.Element {
             href={ISSUES_URL}
             target="_blank"
             rel="noreferrer noopener"
-            className="text-accent underline underline-offset-2"
+            className="text-foreground underline underline-offset-2 hover:opacity-80"
           >
             Open an issue
           </a>
@@ -186,7 +186,7 @@ export default function TrustScorePage(): React.JSX.Element {
 
         <Link
           href="/servers?sort=trust"
-          className="text-accent mt-8 inline-block text-sm transition-opacity hover:opacity-80"
+          className="text-text-muted hover:text-foreground mt-8 inline-block text-sm transition-colors"
         >
           Browse servers by Trust Score →
         </Link>

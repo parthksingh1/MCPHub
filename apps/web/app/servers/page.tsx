@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { BrowseFilters } from '@/components/browse-filters';
+import { PageHeader } from '@/components/page-header';
 import { SearchInput } from '@/components/search-input';
 import { ServerCard } from '@/components/server-card';
 import { SortSelect } from '@/components/sort-select';
@@ -59,13 +60,13 @@ export default async function BrowsePage({ searchParams }: PageProps): Promise<R
   };
 
   return (
-    <main className="container py-10">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">Browse MCP servers</h1>
-        <p className="text-text-secondary mt-2 max-w-prose">
-          {page.total.toLocaleString()} servers indexed, scored, and ready to install.
-        </p>
-      </header>
+    <main className="container py-8">
+      <PageHeader
+        crumbs={[{ label: 'Servers' }]}
+        eyebrow="Directory"
+        title="Browse MCP servers"
+        description={`${page.total.toLocaleString()} servers indexed, scored, and ready to install.`}
+      />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[15rem_1fr]">
         <BrowseFilters categories={categories} total={page.total} />

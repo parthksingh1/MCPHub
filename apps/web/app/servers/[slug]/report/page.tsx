@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { PageHeader } from '@/components/page-header';
 import { ReportForm } from '@/components/report-form';
 import { getServerBySlug } from '@/lib/queries/servers';
 
@@ -25,28 +26,17 @@ export default async function ReportPage({ params }: PageProps): Promise<React.J
   if (!server) notFound();
 
   return (
-    <main className="container max-w-2xl py-12">
-      <nav aria-label="Breadcrumb" className="text-text-muted text-sm">
-        <Link href="/servers" className="hover:text-foreground transition-colors">
-          Servers
-        </Link>
-        <span className="mx-2" aria-hidden>
-          /
-        </span>
-        <Link href={`/servers/${server.slug}`} className="hover:text-foreground transition-colors">
-          {server.name}
-        </Link>
-        <span className="mx-2" aria-hidden>
-          /
-        </span>
-        <span className="text-text-secondary">Report</span>
-      </nav>
-
-      <h1 className="mt-6 text-3xl font-semibold tracking-tight">Report {server.name}</h1>
-      <p className="text-text-secondary mt-3 leading-relaxed">
-        Tell us what is wrong with this listing. Reports are private — only MCPHub maintainers can
-        read them, and we review every one.
-      </p>
+    <main className="container max-w-2xl py-8">
+      <PageHeader
+        crumbs={[
+          { label: 'Servers', href: '/servers' },
+          { label: server.name, href: `/servers/${server.slug}` },
+          { label: 'Report' },
+        ]}
+        eyebrow="Report a listing"
+        title={`Report ${server.name}`}
+        description="Tell us what is wrong with this listing. Reports are private — only MCPHub maintainers can read them, and we review every one."
+      />
 
       <ReportForm slug={server.slug} className="mt-8" />
 
@@ -54,7 +44,10 @@ export default async function ReportPage({ params }: PageProps): Promise<React.J
         Found a security vulnerability in the server itself? Report it to that project&apos;s
         maintainers first, then let us know here so we can flag the listing while it is fixed. See
         our{' '}
-        <Link href="/security" className="text-accent underline underline-offset-2">
+        <Link
+          href="/security"
+          className="text-foreground underline underline-offset-2 hover:opacity-80"
+        >
           security policy
         </Link>{' '}
         for how we handle disclosures.

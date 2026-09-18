@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { PageHeader } from '@/components/page-header';
 import { SECURITY_ADVISORY_URL, SECURITY_CONTACT } from '@/lib/site';
 
 export const revalidate = 86_400;
@@ -15,15 +16,13 @@ export const metadata: Metadata = {
 /** The public security policy. */
 export default function SecurityPage(): React.JSX.Element {
   return (
-    <main className="container max-w-prose py-12">
-      <p className="eyebrow">Policy</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Security</h1>
-
-      <p className="text-text-secondary mt-5 text-lg leading-relaxed">
-        MCPHub exists because an MCP server is not an ordinary dependency. It runs on your machine,
-        with your permissions, acting on instructions that may ultimately come from text a model
-        read somewhere. This page says exactly what we check, and what we cannot.
-      </p>
+    <main className="container max-w-3xl py-8">
+      <PageHeader
+        crumbs={[{ label: 'Security' }]}
+        eyebrow="Policy"
+        title="Security"
+        description="MCPHub exists because an MCP server is not an ordinary dependency. It runs on your machine, with your permissions, acting on instructions that may ultimately come from text a model read somewhere. This page says exactly what we check, and what we cannot."
+      />
 
       <section className="mt-12">
         <h2 className="text-xl font-semibold tracking-tight">What we scan for</h2>
@@ -108,7 +107,7 @@ export default function SecurityPage(): React.JSX.Element {
             href={SECURITY_ADVISORY_URL}
             target="_blank"
             rel="noreferrer noopener"
-            className="text-accent underline underline-offset-2"
+            className="text-foreground underline underline-offset-2 hover:opacity-80"
           >
             private security advisory on GitHub
           </a>
@@ -117,7 +116,7 @@ export default function SecurityPage(): React.JSX.Element {
               , or email{' '}
               <a
                 href={`mailto:${SECURITY_CONTACT}`}
-                className="text-accent underline underline-offset-2"
+                className="text-foreground underline underline-offset-2 hover:opacity-80"
               >
                 {SECURITY_CONTACT}
               </a>
@@ -139,7 +138,7 @@ export default function SecurityPage(): React.JSX.Element {
 
         <Link
           href="/trust-score"
-          className="text-accent mt-6 inline-block text-sm transition-opacity hover:opacity-80"
+          className="text-text-muted hover:text-foreground mt-6 inline-block text-sm transition-colors"
         >
           How the Trust Score uses these findings →
         </Link>

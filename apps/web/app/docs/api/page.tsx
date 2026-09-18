@@ -2,6 +2,7 @@ import { MAX_PAGE_SIZE, RATE_LIMITS } from '@mcphub/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { PageHeader } from '@/components/page-header';
 import { SITE_URL } from '@/lib/site';
 
 export const revalidate = 86_400;
@@ -124,7 +125,7 @@ function EndpointRow({ endpoint }: { endpoint: Endpoint }): React.JSX.Element {
         <dl className="mt-4 space-y-1.5">
           {endpoint.params.map(([name, detail]) => (
             <div key={name} className="grid grid-cols-[7rem_1fr] gap-3">
-              <dt className="text-accent font-mono text-xs">{name}</dt>
+              <dt className="text-foreground font-mono text-xs font-medium">{name}</dt>
               <dd className="text-text-muted text-xs leading-relaxed">{detail}</dd>
             </div>
           ))}
@@ -137,14 +138,13 @@ function EndpointRow({ endpoint }: { endpoint: Endpoint }): React.JSX.Element {
 /** Public API documentation. */
 export default function ApiDocsPage(): React.JSX.Element {
   return (
-    <main className="container max-w-3xl py-12">
-      <p className="eyebrow">Public API</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">API documentation</h1>
-
-      <p className="text-text-secondary mt-5 text-lg leading-relaxed">
-        Everything the site itself runs on is public. No key, no signup, no quota beyond a fair-use
-        rate limit — build whatever you like on top of it.
-      </p>
+    <main className="container max-w-3xl py-8">
+      <PageHeader
+        crumbs={[{ label: 'API' }]}
+        eyebrow="Public API"
+        title="API documentation"
+        description="Everything the site itself runs on is public. No key, no signup, no quota beyond a fair-use rate limit — build whatever you like on top of it."
+      />
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold tracking-tight">Base URL</h2>
@@ -242,7 +242,10 @@ curl "${SITE_URL}/api/servers/mcp-server-postgrest"`}</code>
 
       <p className="text-text-muted mt-12 border-t pt-6 text-sm">
         Responses are cached at the edge. Please cache on your side too rather than polling —{' '}
-        <Link href="/submit" className="text-accent underline underline-offset-2">
+        <Link
+          href="/submit"
+          className="text-foreground underline underline-offset-2 hover:opacity-80"
+        >
           submit a server
         </Link>{' '}
         if you want something indexed.

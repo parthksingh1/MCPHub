@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { PageHeader } from '@/components/page-header';
 import { SubmitForm } from '@/components/submit-form';
 
 export const metadata: Metadata = {
@@ -12,12 +13,13 @@ export const metadata: Metadata = {
 /** The submission page. */
 export default function SubmitPage(): React.JSX.Element {
   return (
-    <main className="container max-w-2xl py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Submit a server</h1>
-      <p className="text-text-secondary mt-3 leading-relaxed">
-        Built an MCP server, or found one that is missing? Paste the GitHub URL and we will index
-        it, score it, and scan it — usually within 24 hours.
-      </p>
+    <main className="container max-w-2xl py-8">
+      <PageHeader
+        crumbs={[{ label: 'Submit a server' }]}
+        eyebrow="Contribute"
+        title="Submit a server"
+        description="Built an MCP server, or found one that is missing? Paste the GitHub URL and we will index it, score it, and scan it — usually within 24 hours."
+      />
 
       <SubmitForm className="mt-8" />
 

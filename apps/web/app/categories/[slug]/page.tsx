@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { PageHeader } from '@/components/page-header';
 import { ServerCard } from '@/components/server-card';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
@@ -102,31 +103,18 @@ export default async function CategoryPage({ params }: PageProps): Promise<React
   };
 
   return (
-    <main className="container py-10">
+    <main className="container py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
       />
 
-      <nav aria-label="Breadcrumb" className="text-text-muted text-sm">
-        <Link href="/categories" className="hover:text-foreground transition-colors">
-          Categories
-        </Link>
-        <span className="mx-2" aria-hidden>
-          /
-        </span>
-        <span className="text-text-secondary">{label}</span>
-      </nav>
-
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-        Best {label} MCP servers in {year}
-      </h1>
-
-      <p className="text-text-secondary mt-3 max-w-prose leading-relaxed">
-        {page.total} {label.toLowerCase()} servers, ranked by Trust Score — a 0-100 measure
-        combining maintenance, popularity, security scanning, and code quality. Every one is open
-        source, and every one shows a copy-paste install command for your MCP client.
-      </p>
+      <PageHeader
+        crumbs={[{ label: 'Categories', href: '/categories' }, { label }]}
+        eyebrow="Category"
+        title={`Best ${label} MCP servers in ${year}`}
+        description={`${page.total} ${label.toLowerCase()} servers, ranked by Trust Score — a 0-100 measure combining maintenance, popularity, security scanning, and code quality. Every one is open source, and every one shows a copy-paste install command for your MCP client.`}
+      />
 
       {page.items.length === 0 ? (
         <div className="mt-10 rounded-lg border border-dashed p-10 text-center">

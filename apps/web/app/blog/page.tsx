@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+import { PageHeader } from '@/components/page-header';
+
 export const revalidate = 86_400;
 
 export const metadata: Metadata = {
@@ -53,11 +55,13 @@ const POSTS = [
 /** The blog index. */
 export default function BlogPage(): React.JSX.Element {
   return (
-    <main className="container max-w-3xl py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Blog</h1>
-      <p className="text-text-secondary mt-3 max-w-prose">
-        Writing about the MCP ecosystem, security, and how MCPHub works.
-      </p>
+    <main className="container max-w-3xl py-8">
+      <PageHeader
+        crumbs={[{ label: 'Blog' }]}
+        eyebrow="Writing"
+        title="Blog"
+        description="Writing about the MCP ecosystem, security, and how MCPHub works."
+      />
 
       <div className="mt-10 space-y-8">
         {POSTS.map((post) => (

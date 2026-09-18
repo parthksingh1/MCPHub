@@ -2,6 +2,7 @@ import { CATEGORY_LABELS, type Category } from '@mcphub/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { PageHeader } from '@/components/page-header';
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Button } from '@/components/ui/button';
 import { formatCount, formatLicense, formatRelativeTime } from '@/lib/format';
@@ -39,13 +40,19 @@ export default async function ComparePage({ searchParams }: PageProps): Promise<
 
   if (!left || !right) {
     return (
-      <main className="container max-w-2xl py-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Compare servers</h1>
-        <p className="text-text-secondary mt-3 leading-relaxed">
-          Put two servers side by side. Add{' '}
-          <code className="font-mono text-sm">?a=slug&amp;b=slug</code> to the URL, or open any
-          server and pick one from its Alternatives.
-        </p>
+      <main className="container max-w-2xl py-8">
+        <PageHeader
+          crumbs={[{ label: 'Compare' }]}
+          eyebrow="Tools"
+          title="Compare servers"
+          description={
+            <>
+              Put two servers side by side. Add{' '}
+              <code className="font-mono text-sm">?a=slug&amp;b=slug</code> to the URL, or open any
+              server and pick one from its Alternatives.
+            </>
+          }
+        />
         {(a ?? b) && (
           <p className="text-danger mt-4 text-sm">
             {!left && a ? `No server found with slug “${a}”. ` : ''}
@@ -95,10 +102,15 @@ export default async function ComparePage({ searchParams }: PageProps): Promise<
   ];
 
   return (
-    <main className="container py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        {left.name} vs {right.name}
-      </h1>
+    <main className="container py-8">
+      <PageHeader
+        crumbs={[
+          { label: 'Compare', href: '/compare' },
+          { label: `${left.name} vs ${right.name}` },
+        ]}
+        eyebrow="Comparison"
+        title={`${left.name} vs ${right.name}`}
+      />
 
       <div className="mt-8 grid grid-cols-2 gap-4">
         {[left, right].map((server) => (

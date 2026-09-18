@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { AuthButton } from '@/components/auth-button';
 import { DeleteAccount } from '@/components/delete-account';
+import { PageHeader } from '@/components/page-header';
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser } from '@/lib/auth';
@@ -77,9 +78,13 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
   const submitted = submissions.data ?? [];
 
   return (
-    <main className="container py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Your dashboard</h1>
-      <p className="text-text-muted mt-2 text-sm">{user.email}</p>
+    <main className="container py-8">
+      <PageHeader
+        crumbs={[{ label: 'Dashboard' }]}
+        eyebrow="Account"
+        title="Your dashboard"
+        description={user.email}
+      />
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold tracking-tight">Favourites</h2>
@@ -87,7 +92,10 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         {saved.length === 0 ? (
           <p className="text-text-muted mt-3 text-sm">
             Nothing saved yet.{' '}
-            <Link href="/servers" className="text-accent underline underline-offset-2">
+            <Link
+              href="/servers"
+              className="text-foreground underline underline-offset-2 hover:opacity-80"
+            >
               Browse servers
             </Link>{' '}
             and save the ones you use.
@@ -126,7 +134,10 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         {submitted.length === 0 ? (
           <p className="text-text-muted mt-3 text-sm">
             You have not submitted a server yet.{' '}
-            <Link href="/submit" className="text-accent underline underline-offset-2">
+            <Link
+              href="/submit"
+              className="text-foreground underline underline-offset-2 hover:opacity-80"
+            >
               Submit one
             </Link>
             .
