@@ -4,5 +4,6 @@ export * from './favorites';
 export * from './ratings';
 export * from './reports';
 export * from './servers';
+export * from './sponsorships';
 export * from './submissions';
 export * from './types';
