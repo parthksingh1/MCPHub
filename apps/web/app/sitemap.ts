@@ -1,6 +1,7 @@
 import { CATEGORIES } from '@mcphub/shared';
 import type { MetadataRoute } from 'next';
 
+import { COLLECTIONS } from '@/lib/collections';
 import { getAllSlugs } from '@/lib/queries/servers';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -34,6 +35,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/servers`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${siteUrl}/categories`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${siteUrl}/rankings`, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${siteUrl}/collections`, changeFrequency: 'weekly', priority: 0.7 },
+    ...COLLECTIONS.map((collection) => ({
+      url: `${siteUrl}/collections/${collection.slug}`,
+      changeFrequency: 'daily' as const,
+      priority: 0.6,
+    })),
     { url: `${siteUrl}/badges`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/security`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${siteUrl}/legal/privacy`, changeFrequency: 'yearly', priority: 0.2 },
