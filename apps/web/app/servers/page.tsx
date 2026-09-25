@@ -3,13 +3,19 @@ import { SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { ActiveFilters, CategoryPills, FilterSheet, SortTabs } from '@/components/browse-controls';
+import {
+  ActiveFilters,
+  BrowseSidebar,
+  CategoryPills,
+  FilterSheet,
+  SortTabs,
+} from '@/components/browse-controls';
 import { PageHeader } from '@/components/page-header';
 import { SearchInput } from '@/components/search-input';
 import { ServerCard } from '@/components/server-card';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
-import { getCategoryCounts, listServers } from '@/lib/queries/servers';
+import { getCategoryCounts, getSiteStats, listServers } from '@/lib/queries/servers';
 
 export const revalidate = 60;
 
@@ -63,6 +69,10 @@ export default async function BrowsePage({ searchParams }: PageProps): Promise<R
   };
 
   const sortedCategories = [...categories].sort((a, b) => b.count - a.count);
+  // The index size for the "All servers" row, independent of current filters.
+  const allTotal = await cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () =>
+    getSiteStats(),
+  ).then((stats) => stats.totalServers);
 
   return (
     <main className="container py-8">
@@ -72,68 +82,78 @@ export default async function BrowsePage({ searchParams }: PageProps): Promise<R
         description={`${page.total.toLocaleString()} servers, each scored, scanned and ready to install.`}
       />
 
-      <div className="mt-8 space-y-4">
-        <div className="flex gap-3">
-          <SearchInput />
-          <FilterSheet total={page.total} />
-        </div>
-        <CategoryPills categories={sortedCategories} />
-      </div>
+      <div className="mt-8 grid gap-10 lg:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <BrowseSidebar categories={sortedCategories} total={allTotal} />
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-        <p className="text-text-secondary text-sm" aria-live="polite">
-          {page.total === 0 ? (
-            'No servers match'
-          ) : (
-            <>
-              <span className="text-foreground font-semibold tabular-nums">
-                {page.total.toLocaleString()}
-              </span>{' '}
-              {page.total === 1 ? 'server' : 'servers'}
-            </>
-          )}
-        </p>
-        <SortTabs />
-      </div>
-
-      <div className="mt-4">
-        <ActiveFilters />
-      </div>
-
-      {page.items.length === 0 ? (
-        <div className="mt-8 flex flex-col items-center rounded-2xl border border-dashed py-20 text-center">
-          <SearchX className="text-text-muted size-8" aria-hidden />
-          <h2 className="mt-4 font-semibold">No servers match</h2>
-          <p className="text-text-muted mt-1 max-w-sm text-sm">
-            Try removing a filter or a word from your search.
-          </p>
-          <Button asChild variant="secondary" className="mt-5">
-            <Link href="/servers">Clear everything</Link>
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {page.items.map((server, index) => (
-              <ServerCard key={server.id} server={server} index={index} />
-            ))}
+        <div className="min-w-0">
+          <div className="flex gap-3">
+            <SearchInput />
+            <div className="lg:hidden">
+              <FilterSheet total={page.total} />
+            </div>
           </div>
 
-          {page.hasMore && (
-            <div className="mt-12 flex flex-col items-center gap-3">
-              <Button asChild variant="secondary" size="lg" className="rounded-xl">
-                <Link href={nextPageHref()} scroll={false}>
-                  Load more servers
-                </Link>
-              </Button>
-              <p className="text-text-muted text-xs">
-                Showing {(page.page * page.pageSize).toLocaleString()} of{' '}
-                {page.total.toLocaleString()}
+          {/* Phones and tablets: categories as a sideways-scrolling row. */}
+          <div className="mt-4 lg:hidden">
+            <CategoryPills categories={sortedCategories} />
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-text-secondary text-sm" aria-live="polite">
+              {page.total === 0 ? (
+                'No servers match'
+              ) : (
+                <>
+                  <span className="text-foreground font-semibold tabular-nums">
+                    {page.total.toLocaleString()}
+                  </span>{' '}
+                  {page.total === 1 ? 'server' : 'servers'}
+                </>
+              )}
+            </p>
+            <SortTabs />
+          </div>
+
+          <div className="mt-4">
+            <ActiveFilters />
+          </div>
+
+          {page.items.length === 0 ? (
+            <div className="mt-6 flex flex-col items-center rounded-2xl border border-dashed py-20 text-center">
+              <SearchX className="text-text-muted size-8" aria-hidden />
+              <h2 className="mt-4 font-semibold">No servers match</h2>
+              <p className="text-text-muted mt-1 max-w-sm text-sm">
+                Try removing a filter or a word from your search.
               </p>
+              <Button asChild variant="secondary" className="mt-5">
+                <Link href="/servers">Clear everything</Link>
+              </Button>
             </div>
+          ) : (
+            <>
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {page.items.map((server, index) => (
+                  <ServerCard key={server.id} server={server} index={index} />
+                ))}
+              </div>
+
+              {page.hasMore && (
+                <div className="mt-12 flex flex-col items-center gap-3">
+                  <Button asChild variant="secondary" size="lg" className="rounded-xl">
+                    <Link href={nextPageHref()} scroll={false}>
+                      Load more servers
+                    </Link>
+                  </Button>
+                  <p className="text-text-muted text-xs">
+                    Showing {(page.page * page.pageSize).toLocaleString()} of{' '}
+                    {page.total.toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </>
           )}
-        </>
-      )}
+        </div>
+      </div>
     </main>
   );
 }
