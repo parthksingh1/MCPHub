@@ -51,10 +51,11 @@
   .dark {
     color-scheme: dark;
 
-    /* Blue-ink rather than neutral black: reads as depth, not emptiness. */
-    --background: 226 45% 5%; /* #070a13 */
-    --surface: 224 35% 8%; /* #0d1220 */
-    --surface-hover: 223 28% 12%;
+    /* Soft charcoal rather than pure black: easier on the eyes, and cards
+       lift off the page without heavy borders. */
+    --background: 222 14% 9%; /* #14161b */
+    --surface: 222 13% 12%; /* #1b1e23 */
+    --surface-hover: 222 12% 16%;
 
     --text-primary: 210 40% 98%;
     --text-primary-raw: #f8fafc;
@@ -66,7 +67,7 @@
 
     --accent: 158 64% 52%; /* #34d399 */
     --accent-to: 188 86% 53%; /* #22d3ee */
-    --accent-foreground: 226 45% 5%;
+    --accent-foreground: 222 14% 9%;
 
     --success: 158 64% 52%;
     --warn: 38 92% 56%;
