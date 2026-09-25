@@ -3,7 +3,7 @@ import { Github } from 'lucide-react';
 import Link from 'next/link';
 
 import { Logo } from '@/components/logo';
-import { LEGAL_NAV, PRIMARY_NAV, SPOTLIGHT_LINK } from '@/lib/nav';
+import { EXPLORE_NAV, LEGAL_NAV, RESOURCE_NAV, SPOTLIGHT_LINK } from '@/lib/nav';
 import { CONTRIBUTING_URL, REPO_URL } from '@/lib/site';
 
 /** A titled column of footer links. */
@@ -52,8 +52,6 @@ function FooterColumn({
  * affiliation with the projects listed, and marks belong to their owners.
  */
 export function SiteFooter(): React.JSX.Element {
-  const [explore, resources] = PRIMARY_NAV;
-
   return (
     <footer className="mt-24 border-t">
       <div className="container py-14">
@@ -77,10 +75,10 @@ export function SiteFooter(): React.JSX.Element {
             </a>
           </div>
 
-          <FooterColumn title="Explore" links={explore?.links ?? []} />
+          <FooterColumn title="Explore" links={EXPLORE_NAV} />
           <FooterColumn
             title="Resources"
-            links={[...(resources?.links ?? []), { href: '/submit', label: 'Submit a server' }]}
+            links={[...RESOURCE_NAV, { href: '/submit', label: 'Submit a server' }]}
           />
           <FooterColumn
             title="Project"

@@ -8,6 +8,7 @@ import {
   Flame,
   GitCompare,
   Layers,
+  LayoutGrid,
   Megaphone,
   Scale,
   ShieldCheck,
@@ -24,7 +25,7 @@ export interface NavLink {
   icon?: LucideIcon;
 }
 
-/** A labelled group of links, rendered as a dropdown on desktop. */
+/** A labelled group of links (footer columns, mobile menu sections). */
 export interface NavGroup {
   label: string;
   links: NavLink[];
@@ -33,82 +34,61 @@ export interface NavGroup {
 /**
  * The single source of truth for site navigation.
  *
- * Header, mobile drawer, and footer all read from here, so a page can never be
- * reachable from one and missing from another — which was exactly the "hard to
- * navigate" problem: Rankings, Badges and the legal pages had no route in.
+ * The header is one flat row — every primary destination is a single click,
+ * with no menus to open and nothing hidden. Secondary pages live in the footer
+ * and the mobile menu, which read the same lists, so nothing can drift.
  */
-export const PRIMARY_NAV: NavGroup[] = [
+export const MAIN_NAV: NavLink[] = [
   {
-    label: 'Explore',
-    links: [
-      {
-        href: '/servers',
-        label: 'All servers',
-        description: 'Search and filter the full index',
-        icon: Boxes,
-      },
-      {
-        href: '/rankings',
-        label: 'Daily rankings',
-        description: 'Top servers by Trust Score, updated daily',
-        icon: Trophy,
-      },
-      {
-        href: '/rankings?view=rising',
-        label: 'Rising',
-        description: 'Biggest Trust Score gains this week',
-        icon: Flame,
-      },
-      {
-        href: '/servers?sort=recent',
-        label: 'New',
-        description: 'Recently indexed servers',
-        icon: Sparkles,
-      },
-      {
-        href: '/categories',
-        label: 'Categories',
-        description: 'Browse by what a server connects to',
-        icon: Layers,
-      },
-      {
-        href: '/compare',
-        label: 'Compare',
-        description: 'Two servers side by side',
-        icon: GitCompare,
-      },
-    ],
+    href: '/servers',
+    label: 'Servers',
+    description: 'Search and filter every server',
+    icon: Boxes,
   },
   {
-    label: 'Resources',
-    links: [
-      {
-        href: '/trust-score',
-        label: 'Trust Score',
-        description: 'How every server is rated',
-        icon: Award,
-      },
-      {
-        href: '/security',
-        label: 'Security',
-        description: 'What we scan for, and what we cannot',
-        icon: ShieldCheck,
-      },
-      {
-        href: '/badges',
-        label: 'Badges',
-        description: 'Embed your score in a README',
-        icon: BadgeCheck,
-      },
-      {
-        href: '/docs/api',
-        label: 'API',
-        description: 'Free public API, no key',
-        icon: Code2,
-      },
-      { href: '/blog', label: 'Blog', description: 'Notes on the MCP ecosystem', icon: BookOpen },
-    ],
+    href: '/categories',
+    label: 'Categories',
+    description: 'Browse by what a server connects to',
+    icon: LayoutGrid,
   },
+  {
+    href: '/collections',
+    label: 'Collections',
+    description: 'Curated stacks for common jobs',
+    icon: Layers,
+  },
+  {
+    href: '/rankings',
+    label: 'Rankings',
+    description: 'Top servers by Trust Score, daily',
+    icon: Trophy,
+  },
+  {
+    href: '/trust-score',
+    label: 'Trust Score',
+    description: 'How every server is rated',
+    icon: Award,
+  },
+];
+
+/** Discovery shortcuts, shown in the footer and mobile menu. */
+export const EXPLORE_NAV: NavLink[] = [
+  { href: '/servers', label: 'All servers', icon: Boxes },
+  { href: '/rankings', label: 'Daily rankings', icon: Trophy },
+  { href: '/rankings?view=rising', label: 'Rising this week', icon: Flame },
+  { href: '/rankings?view=new', label: 'Newly added', icon: Sparkles },
+  { href: '/collections', label: 'Collections', icon: Layers },
+  { href: '/categories', label: 'Categories', icon: LayoutGrid },
+  { href: '/compare', label: 'Compare', icon: GitCompare },
+];
+
+/** Learn-more pages, shown in the footer and mobile menu. */
+export const RESOURCE_NAV: NavLink[] = [
+  { href: '/trust-score', label: 'Trust Score', icon: Award },
+  { href: '/badges', label: 'Badges', icon: BadgeCheck },
+  { href: '/security', label: 'Security', icon: ShieldCheck },
+  { href: '/docs/api', label: 'Public API', icon: Code2 },
+  { href: '/blog', label: 'Blog', icon: BookOpen },
 ];
 
 /** Promoted, paid placement — separated from rankings, always labelled. */
@@ -127,3 +107,9 @@ export const LEGAL_NAV: NavLink[] = [
   { href: '/legal/sponsored', label: 'Sponsored content' },
   { href: '/security', label: 'Security policy' },
 ];
+
+/** True when `pathname` is inside the given link's section. */
+export function isNavActive(pathname: string, href: string): boolean {
+  const base = href.split('?')[0] ?? href;
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
