@@ -44,7 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cacheKey, cached } from '@/lib/cache';
 import { formatCount, formatDate, formatLicense, formatRelativeTime } from '@/lib/format';
 import { getRelatedServers, getServerBySlug } from '@/lib/queries/servers';
-import { SITE_URL } from '@/lib/site';
+import { REMOVAL_REQUEST_URL, SITE_URL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 /**
@@ -288,9 +288,12 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
                     Scan clean
                   </Badge>
                 ) : (
-                  <Badge variant="warn">
+                  <Badge
+                    variant="warn"
+                    title="Automated pattern matches from our open ruleset — not confirmed vulnerabilities"
+                  >
                     <ShieldAlert aria-hidden />
-                    {findings.length} finding{findings.length === 1 ? '' : 's'}
+                    {findings.length} to review
                   </Badge>
                 )
               ) : (
@@ -317,6 +320,26 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
 
         <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:items-end">
           <TrustScoreRing score={server.trustTotal} size={76} strokeWidth={5} showLabel />
+          {/* Scores are opinions from public data: say so where the number is,
+              and give the maintainer a way to challenge it. */}
+          <p className="text-text-muted max-w-[14rem] text-xs leading-relaxed sm:text-right">
+            Automated score from public data ·{' '}
+            <Link
+              href="/trust-score"
+              className="hover:text-foreground underline underline-offset-2"
+            >
+              how it works
+            </Link>{' '}
+            ·{' '}
+            <a
+              href={REMOVAL_REQUEST_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="hover:text-foreground underline underline-offset-2"
+            >
+              dispute
+            </a>
+          </p>
         </div>
       </header>
 
@@ -399,7 +422,30 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
 
           <TabsContent value="overview">
             {server.longDescription ? (
-              <Readme markdown={server.longDescription} repo={repo} />
+              <>
+                <p className="text-text-muted mb-6 border-b pb-4 text-xs leading-relaxed">
+                  README from{' '}
+                  <a
+                    href={server.repoUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="hover:text-foreground underline underline-offset-2"
+                  >
+                    {repo ?? server.repoUrl}
+                  </a>
+                  , shown for reference
+                  {server.license ? ` under its ${formatLicense(server.license)} licence` : ''}. The
+                  content belongs to its authors. Maintainer?{' '}
+                  <Link
+                    href="/legal/removal"
+                    className="hover:text-foreground underline underline-offset-2"
+                  >
+                    Request changes or removal
+                  </Link>
+                  .
+                </p>
+                <Readme markdown={server.longDescription} repo={repo} />
+              </>
             ) : (
               <p className="text-text-muted text-sm">
                 This server has no README. See the{' '}
@@ -451,24 +497,43 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
                     {audit && audit.total === 0 ? ' and found no dependency advisories' : ''}.
                   </p>
                 ) : (
-                  <ul className="space-y-4">
-                    {findings.slice(0, 20).map((finding, index) => (
-                      <li key={`${finding.ruleId}-${index}`} className="flex items-start gap-3">
-                        <Badge variant={SEVERITY_VARIANT[finding.severity]} className="capitalize">
-                          {finding.severity}
-                        </Badge>
-                        <div className="min-w-0 text-sm">
-                          <p className="text-text-secondary">{finding.message}</p>
-                          {finding.file && (
-                            <p className="text-text-muted mt-1 truncate font-mono text-xs">
-                              {finding.file}
-                              {finding.line ? `:${finding.line}` : ''}
-                            </p>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    <p className="bg-surface-hover text-text-secondary mb-5 rounded-lg border p-3 text-sm leading-relaxed">
+                      These are <strong>automated pattern matches</strong> from our open ruleset,
+                      not confirmed vulnerabilities. Many are false positives, or intended behaviour
+                      for what the server does (a shell tool runs commands by design). Maintainer?{' '}
+                      <a
+                        href={REMOVAL_REQUEST_URL}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="text-foreground underline underline-offset-2"
+                      >
+                        Dispute a finding
+                      </a>
+                      .
+                    </p>
+                    <ul className="space-y-4">
+                      {findings.slice(0, 20).map((finding, index) => (
+                        <li key={`${finding.ruleId}-${index}`} className="flex items-start gap-3">
+                          <Badge
+                            variant={SEVERITY_VARIANT[finding.severity]}
+                            className="capitalize"
+                          >
+                            {finding.severity}
+                          </Badge>
+                          <div className="min-w-0 text-sm">
+                            <p className="text-text-secondary">{finding.message}</p>
+                            {finding.file && (
+                              <p className="text-text-muted mt-1 truncate font-mono text-xs">
+                                {finding.file}
+                                {finding.line ? `:${finding.line}` : ''}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
                 )}
 
                 {audit && audit.total > 0 && (
@@ -494,6 +559,10 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
                 <CardTitle className="text-base">
                   {server.trustTotal}/100 — {getTrustLabel(server.trustTotal)}
                 </CardTitle>
+                <p className="text-text-muted text-xs leading-relaxed">
+                  An automated opinion computed daily from public signals — not an audit,
+                  endorsement or guarantee.
+                </p>
               </CardHeader>
               <CardContent>
                 <dl className="space-y-4">
