@@ -8,12 +8,17 @@ export const contentType = 'image/png';
 /**
  * The site-wide Open Graph image.
  *
- * Generated rather than a static asset so it stays in step with the brand
- * without anyone re-exporting a PNG. Deliberately typographic: OG images are
+ * Generated rather than a static asset so it stays in step with the brand,
+ * with the real logo mark read from `public/brand`. Deliberately typographic: OG images are
  * rendered at thumbnail size in most feeds, where anything detailed turns to
  * mush.
  */
-export default function OpenGraphImage(): ImageResponse {
+export default async function OpenGraphImage(): Promise<ImageResponse> {
+  // The real logo mark, bundled with the route so the edge runtime can read it.
+  const mark = await fetch(new URL('../public/brand/mark.png', import.meta.url)).then((response) =>
+    response.arrayBuffer(),
+  );
+
   return new ImageResponse(
     <div
       style={{
@@ -28,14 +33,8 @@ export default function OpenGraphImage(): ImageResponse {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 8,
-            background: 'linear-gradient(135deg, #7c3aed, #3b82f6)',
-          }}
-        />
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        <img src={mark as unknown as string} width={48} height={48} style={{ borderRadius: 11 }} />
         <span style={{ color: '#ffffff', fontSize: 30, fontWeight: 600 }}>MCPHub</span>
       </div>
 
