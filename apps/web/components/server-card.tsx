@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { TrustedMark } from '@/components/awards';
 import { TrustPill } from '@/components/trust-pill';
 import { formatCount, formatRelativeTime } from '@/lib/format';
-import { languageColor } from '@/lib/language-colors';
+import { languageColor, languageLabel } from '@/lib/language-colors';
 import { cn } from '@/lib/utils';
 
 /** The subset of a server a card needs. */
@@ -132,13 +132,13 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
           </span>
 
           {server.language && (
-            <span className="inline-flex shrink-0 items-center gap-1.5 capitalize">
+            <span className="inline-flex shrink-0 items-center gap-1.5">
               <span
                 aria-hidden
                 className="size-2 rounded-full"
                 style={{ backgroundColor: languageColor(server.language) }}
               />
-              {server.language}
+              {languageLabel(server.language)}
             </span>
           )}
 
