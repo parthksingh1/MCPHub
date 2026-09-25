@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="apps/web/public/brand/logo.png" width="180" alt="MCPHub logo" />
+
 # MCPHub
 
 **The trusted directory for MCP servers.**
