@@ -1,12 +1,11 @@
 import { AWARD_IDS, AWARDS } from '@mcphub/scoring';
 import { TRUST_BANDS, TRUST_MAX_TOTAL } from '@mcphub/shared';
-import { ShieldCheck } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { AWARD_ICON, TrustedMark } from '@/components/awards';
 import { BadgeBuilder } from '@/components/badge-builder';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { Medal } from '@/components/medal';
 import {
   Accordion,
   AccordionContent,
@@ -74,54 +73,83 @@ export default function BadgesPage(): React.JSX.Element {
       </header>
 
       <section aria-labelledby="awards-title" id="awards" className="mt-10 scroll-mt-24">
-        <h2 id="awards-title" className="text-xl font-semibold tracking-tight">
-          Badges a server can earn
-        </h2>
+        {/* The flagship medal, given the stage it deserves. */}
+        <div className="bg-surface relative overflow-hidden rounded-3xl border p-8 sm:p-10">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(420px 260px at 18% 40%, rgba(234,179,8,0.14), transparent 70%), radial-gradient(420px 260px at 90% 0%, hsl(var(--accent) / 0.12), transparent 70%)',
+            }}
+          />
+          <div className="relative flex flex-col items-center gap-8 sm:flex-row">
+            <Medal award="trusted" size={150} className="shrink-0" />
+            <div className="text-center sm:text-left">
+              <p className="eyebrow">The top honour</p>
+              <h2 id="awards-title" className="mt-2 text-2xl font-semibold tracking-tight">
+                {AWARDS.trusted.label}
+              </h2>
+              <p className="text-text-secondary mt-3 max-w-prose leading-relaxed">
+                The badge that answers “can I install this?”. {AWARDS.trusted.criteria}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <h2 className="mt-14 text-xl font-semibold tracking-tight">Collect them all</h2>
         <p className="text-text-muted mt-1 max-w-prose text-sm leading-relaxed">
           Every badge is earned automatically from public data and rechecked daily. None can be
           bought, requested, or granted by sponsorship — these are the exact rules.
         </p>
 
-        {/* The flagship badge, given the room it deserves. */}
-        <div className="bg-surface mt-6 rounded-2xl border p-6">
-          <div className="flex flex-wrap items-start gap-4">
-            <span className="bg-accent/10 text-accent flex size-12 shrink-0 items-center justify-center rounded-xl">
-              <ShieldCheck className="size-6" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-lg font-semibold tracking-tight">{AWARDS.trusted.label}</h3>
-                <TrustedMark />
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+          {AWARD_IDS.filter((id) => id !== 'trusted').map((id) => (
+            <li key={id} className="bg-surface flex items-center gap-5 rounded-2xl border p-5">
+              <Medal
+                award={id}
+                tier={id === 'popular' ? 'gold' : null}
+                size={76}
+                className="shrink-0"
+              />
+              <div className="min-w-0">
+                <h3 className="font-semibold">{AWARDS[id].label}</h3>
+                <p className="text-text-muted mt-1 text-sm leading-relaxed">
+                  {AWARDS[id].criteria}
+                </p>
               </div>
-              <p className="text-text-secondary mt-1.5 max-w-prose text-sm leading-relaxed">
-                The badge that answers “can I install this?”. {AWARDS.trusted.criteria}
-              </p>
-            </div>
-            <Preview
-              svg={renderBadge('mcphub', '✓ trusted', BADGE_COLOURS.high)}
-              alt="MCPHub Trusted README badge"
-            />
+            </li>
+          ))}
+        </ul>
+
+        {/* Popular levels up, like a season badge. */}
+        <div className="mt-6 rounded-2xl border p-6">
+          <h3 className="font-semibold">Popular levels up</h3>
+          <p className="text-text-muted mt-1 text-sm">
+            Bronze at 1,000 stars, silver at 10,000, gold at 50,000.
+          </p>
+          <div className="mt-5 flex flex-wrap items-end justify-center gap-6 sm:justify-start">
+            {(['bronze', 'silver', 'gold'] as const).map((tier) => (
+              <div key={tier} className="flex flex-col items-center">
+                <Medal award="popular" tier={tier} size={84} />
+                <span className="text-text-muted mt-2 text-xs capitalize">{tier}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {AWARD_IDS.filter((id) => id !== 'trusted').map((id) => {
-            const Icon = AWARD_ICON[id];
-            return (
-              <li key={id} className="flex gap-3 rounded-xl border p-4">
-                <span className="bg-surface-hover text-text-secondary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                  <Icon className="size-4" aria-hidden />
-                </span>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold">{AWARDS[id].label}</h3>
-                  <p className="text-text-muted mt-1 text-sm leading-relaxed">
-                    {AWARDS[id].criteria}
-                  </p>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="mt-6 rounded-2xl border p-6">
+          <h3 className="font-semibold">Show your medals in your README</h3>
+          <p className="text-text-muted mt-1 text-sm leading-relaxed">
+            Each medal is a live image. It shows in colour only while your server holds the badge,
+            and turns grey if it is lost — so it can never be faked. Replace{' '}
+            <code className="font-mono">your-server</code> with your slug and pick a badge.
+          </p>
+          <pre className="bg-background mt-4 overflow-x-auto rounded-xl border p-3 font-mono text-xs leading-relaxed">
+            <code>{`<a href="${SITE_URL}/servers/your-server"><img src="${SITE_URL}/api/award/your-server/trusted" width="120" alt="MCPHub Trusted" /></a>`}</code>
+          </pre>
+          <p className="text-text-muted mt-3 text-xs">Badge names: {AWARD_IDS.join(', ')}.</p>
+        </div>
 
         <p className="text-text-muted mt-4 text-xs leading-relaxed">
           Badges are automated signals about public data, not a security audit or a guarantee.
