@@ -9,13 +9,14 @@ import {
   type CategoryCount,
   type McpClient,
 } from '@mcphub/shared';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { Check, SlidersHorizontal, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { CATEGORY_ICON } from '@/lib/category-icons';
+import { CATEGORY_STYLE } from '@/lib/category-style';
 import { languageLabel } from '@/lib/language-colors';
 import { cn } from '@/lib/utils';
 
@@ -401,5 +402,241 @@ export function ActiveFilters(): React.JSX.Element | null {
         Clear all
       </button>
     </div>
+  );
+}
+
+/** A checkbox row for the sidebar, drawn to match the rest of the UI. */
+function CheckRow({
+  checked,
+  onToggle,
+  children,
+}: {
+  checked: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      onClick={onToggle}
+      className="hover:bg-surface-hover flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"
+    >
+      <span
+        className={cn(
+          'flex size-4 shrink-0 items-center justify-center rounded border transition-colors',
+          checked ? 'border-foreground bg-foreground text-background' : 'border-hover',
+        )}
+      >
+        {checked && <Check className="size-3" strokeWidth={3} aria-hidden />}
+      </span>
+      <span className={checked ? 'text-foreground' : 'text-text-secondary'}>{children}</span>
+    </button>
+  );
+}
+
+/** A titled group in the sidebar. */
+function SidebarGroup({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div>
+      <p className="text-text-muted mb-2 px-2 text-xs font-semibold uppercase tracking-wider">
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The browse sidebar, in the manner of the Vercel and Raycast marketplaces:
+ * categories as a quiet vertical list you can scan top to bottom, then the
+ * filters that narrow within one. Choosing a category replaces the current
+ * one, like moving between sections, rather than piling selections up.
+ */
+export function BrowseSidebar({
+  categories,
+  total,
+}: {
+  categories: CategoryCount[];
+  total: number;
+}): React.JSX.Element {
+  const { params, pending, update } = useQueryState();
+
+  const selected = params.get('category');
+  const clients = params.getAll('client');
+  const language = params.get('language') ?? '';
+  const minTrust = params.get('minTrust') ?? '';
+  const verified = params.get('verified') === 'true';
+  const official = params.get('official') === 'true';
+
+  return (
+    <aside
+      aria-label="Categories and filters"
+      className={cn(
+        'sticky top-24 hidden max-h-[calc(100vh-7rem)] space-y-7 overflow-y-auto pb-6 pr-2 [scrollbar-width:thin] lg:block',
+        pending && 'opacity-70 transition-opacity',
+      )}
+    >
+      <SidebarGroup title="Categories">
+        <ul className="space-y-0.5">
+          <li>
+            <button
+              type="button"
+              aria-current={!selected ? 'page' : undefined}
+              onClick={() => update((next) => next.delete('category'))}
+              className={cn(
+                'flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors',
+                !selected
+                  ? 'bg-surface-hover text-foreground font-medium'
+                  : 'text-text-secondary hover:bg-surface-hover hover:text-foreground',
+              )}
+            >
+              <span className="bg-surface-hover ring-border flex size-7 items-center justify-center rounded-md ring-1 ring-inset">
+                <span className="grid grid-cols-2 gap-0.5" aria-hidden>
+                  <span className="size-1 rounded-[1px] bg-current" />
+                  <span className="size-1 rounded-[1px] bg-current" />
+                  <span className="size-1 rounded-[1px] bg-current" />
+                  <span className="size-1 rounded-[1px] bg-current" />
+                </span>
+              </span>
+              <span className="flex-1">All servers</span>
+              <span className="text-text-muted text-xs tabular-nums">{total.toLocaleString()}</span>
+            </button>
+          </li>
+          {categories
+            .filter((category) => category.count > 0)
+            .map((category) => {
+              const Icon = CATEGORY_ICON[category.slug];
+              const active = selected === category.slug;
+              return (
+                <li key={category.slug}>
+                  <button
+                    type="button"
+                    aria-current={active ? 'page' : undefined}
+                    onClick={() =>
+                      update((next) =>
+                        active ? next.delete('category') : next.set('category', category.slug),
+                      )
+                    }
+                    className={cn(
+                      'flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors',
+                      active
+                        ? 'bg-surface-hover text-foreground font-medium'
+                        : 'text-text-secondary hover:bg-surface-hover hover:text-foreground',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'flex size-7 items-center justify-center rounded-md ring-1 ring-inset',
+                        CATEGORY_STYLE[category.slug].tile,
+                      )}
+                    >
+                      <Icon className="size-3.5" aria-hidden />
+                    </span>
+                    <span className="flex-1 truncate">{CATEGORY_LABELS[category.slug]}</span>
+                    <span className="text-text-muted text-xs tabular-nums">
+                      {category.count.toLocaleString()}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+        </ul>
+      </SidebarGroup>
+
+      <SidebarGroup title="Trust Score">
+        <div className="bg-surface mx-2 grid grid-cols-4 rounded-lg border p-0.5">
+          {TRUST_PRESETS.map((preset) => {
+            const active = minTrust === preset.value;
+            return (
+              <button
+                key={preset.label}
+                type="button"
+                aria-pressed={active}
+                onClick={() =>
+                  update((next) =>
+                    preset.value ? next.set('minTrust', preset.value) : next.delete('minTrust'),
+                  )
+                }
+                className={cn(
+                  'h-7 cursor-pointer rounded-md text-xs transition-colors',
+                  active
+                    ? 'bg-background text-foreground font-semibold shadow-sm'
+                    : 'text-text-muted hover:text-foreground',
+                )}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+      </SidebarGroup>
+
+      <SidebarGroup title="Works with">
+        {MCP_CLIENTS.map((client: McpClient) => (
+          <CheckRow
+            key={client}
+            checked={clients.includes(client)}
+            onToggle={() => update((next) => toggle(next, 'client', client))}
+          >
+            {MCP_CLIENT_LABELS[client]}
+          </CheckRow>
+        ))}
+      </SidebarGroup>
+
+      <SidebarGroup title="Language">
+        <div className="flex flex-wrap gap-1.5 px-2">
+          {LANGUAGES.filter((option) => option !== 'other').map((option) => {
+            const active = language === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={active}
+                onClick={() =>
+                  update((next) =>
+                    active ? next.delete('language') : next.set('language', option),
+                  )
+                }
+                className={cn(
+                  'h-7 cursor-pointer rounded-md border px-2.5 text-xs transition-colors',
+                  active
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'text-text-secondary hover:border-hover hover:text-foreground',
+                )}
+              >
+                {languageLabel(option)}
+              </button>
+            );
+          })}
+        </div>
+      </SidebarGroup>
+
+      <SidebarGroup title="Publisher">
+        <CheckRow
+          checked={verified}
+          onToggle={() =>
+            update((next) => (verified ? next.delete('verified') : next.set('verified', 'true')))
+          }
+        >
+          Verified by MCPHub
+        </CheckRow>
+        <CheckRow
+          checked={official}
+          onToggle={() =>
+            update((next) => (official ? next.delete('official') : next.set('official', 'true')))
+          }
+        >
+          Official publishers
+        </CheckRow>
+      </SidebarGroup>
+    </aside>
   );
 }
