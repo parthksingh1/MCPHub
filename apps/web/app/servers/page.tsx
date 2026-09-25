@@ -3,11 +3,10 @@ import { SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { BrowseFilters } from '@/components/browse-filters';
+import { ActiveFilters, CategoryPills, FilterSheet, SortTabs } from '@/components/browse-controls';
 import { PageHeader } from '@/components/page-header';
 import { SearchInput } from '@/components/search-input';
 import { ServerCard } from '@/components/server-card';
-import { SortSelect } from '@/components/sort-select';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
 import { getCategoryCounts, listServers } from '@/lib/queries/servers';
@@ -18,6 +17,7 @@ export const metadata: Metadata = {
   title: 'Browse MCP servers',
   description:
     'Search and filter every indexed Model Context Protocol server by category, client compatibility, language, and Trust Score.',
+  alternates: { canonical: '/servers' },
 };
 
 /** Next 15 passes search params as a promise. */
@@ -28,10 +28,13 @@ interface PageProps {
 /**
  * The browse page.
  *
+ * Laid out top-down rather than with a sidebar: search, then categories as
+ * one row, then sort — so the grid gets the full width and nothing competes
+ * with the results. Secondary filters sit behind one "Filters" button.
+ *
  * Filters live entirely in the URL, so this stays a server component and every
- * filter combination is independently cacheable at the edge. "Load more" is a
- * real link rather than infinite scroll: it is reachable by keyboard, crawlable
- * by search engines, and does not trap the footer out of reach.
+ * combination is independently cacheable. "Load more" is a real link: keyboard
+ * reachable, crawlable, and it never traps the footer out of reach.
  */
 export default async function BrowsePage({ searchParams }: PageProps): Promise<React.JSX.Element> {
   const raw = await searchParams;
@@ -59,67 +62,78 @@ export default async function BrowsePage({ searchParams }: PageProps): Promise<R
     return `/servers?${next}`;
   };
 
+  const sortedCategories = [...categories].sort((a, b) => b.count - a.count);
+
   return (
     <main className="container py-8">
       <PageHeader
         crumbs={[{ label: 'Servers' }]}
-        eyebrow="Directory"
-        title="Browse MCP servers"
-        description={`${page.total.toLocaleString()} servers indexed, scored, and ready to install.`}
+        title="MCP servers"
+        description={`${page.total.toLocaleString()} servers, each scored, scanned and ready to install.`}
       />
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[15rem_1fr]">
-        <BrowseFilters categories={categories} total={page.total} />
+      <div className="mt-8 space-y-4">
+        <div className="flex gap-3">
+          <SearchInput />
+          <FilterSheet total={page.total} />
+        </div>
+        <CategoryPills categories={sortedCategories} />
+      </div>
 
-        <div className="min-w-0">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <SearchInput />
-            <SortSelect />
-          </div>
-
-          <p className="text-text-muted mt-4 text-sm" aria-live="polite">
-            {page.total === 0
-              ? 'No servers match these filters'
-              : `Showing ${page.items.length} of ${page.total.toLocaleString()} servers`}
-          </p>
-
-          {page.items.length === 0 ? (
-            <div className="mt-8 flex flex-col items-center rounded-lg border border-dashed py-16 text-center">
-              <SearchX className="text-text-muted size-8" aria-hidden />
-              <h2 className="mt-4 font-medium">Nothing here yet</h2>
-              <p className="text-text-muted mt-1 max-w-sm text-sm">
-                No server matches every filter you have applied. Try removing one, or lowering the
-                minimum Trust Score.
-              </p>
-              <Button asChild variant="secondary" className="mt-5">
-                <Link href="/servers">Clear all filters</Link>
-              </Button>
-            </div>
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+        <p className="text-text-secondary text-sm" aria-live="polite">
+          {page.total === 0 ? (
+            'No servers match'
           ) : (
             <>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {page.items.map((server, index) => (
-                  <ServerCard key={server.id} server={server} index={index} />
-                ))}
-              </div>
-
-              {page.hasMore && (
-                <div className="mt-10 flex justify-center">
-                  <Button asChild variant="secondary" size="lg">
-                    <Link href={nextPageHref()} scroll={false}>
-                      Load more servers
-                    </Link>
-                  </Button>
-                </div>
-              )}
-
-              <p className="text-text-muted mt-6 text-center text-xs">
-                Page {page.page} of {page.totalPages.toLocaleString()}
-              </p>
+              <span className="text-foreground font-semibold tabular-nums">
+                {page.total.toLocaleString()}
+              </span>{' '}
+              {page.total === 1 ? 'server' : 'servers'}
             </>
           )}
-        </div>
+        </p>
+        <SortTabs />
       </div>
+
+      <div className="mt-4">
+        <ActiveFilters />
+      </div>
+
+      {page.items.length === 0 ? (
+        <div className="mt-8 flex flex-col items-center rounded-2xl border border-dashed py-20 text-center">
+          <SearchX className="text-text-muted size-8" aria-hidden />
+          <h2 className="mt-4 font-semibold">No servers match</h2>
+          <p className="text-text-muted mt-1 max-w-sm text-sm">
+            Try removing a filter or a word from your search.
+          </p>
+          <Button asChild variant="secondary" className="mt-5">
+            <Link href="/servers">Clear everything</Link>
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {page.items.map((server, index) => (
+              <ServerCard key={server.id} server={server} index={index} />
+            ))}
+          </div>
+
+          {page.hasMore && (
+            <div className="mt-12 flex flex-col items-center gap-3">
+              <Button asChild variant="secondary" size="lg" className="rounded-xl">
+                <Link href={nextPageHref()} scroll={false}>
+                  Load more servers
+                </Link>
+              </Button>
+              <p className="text-text-muted text-xs">
+                Showing {(page.page * page.pageSize).toLocaleString()} of{' '}
+                {page.total.toLocaleString()}
+              </p>
+            </div>
+          )}
+        </>
+      )}
     </main>
   );
 }
