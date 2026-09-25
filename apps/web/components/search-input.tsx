@@ -45,25 +45,25 @@ export function SearchInput(): React.JSX.Element {
   }, [value, urlQuery, params, pathname, router]);
 
   return (
-    <div className="relative flex-1">
+    <div className="relative min-w-0 flex-1">
       <Search
-        className="text-text-muted pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
+        className="text-text-muted pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2"
         aria-hidden
       />
       <Input
         type="search"
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        placeholder="Search servers…"
+        placeholder="Search by name, tool or integration…"
         aria-label="Search servers"
-        className="pl-9 pr-9"
+        className="bg-surface h-11 rounded-xl pl-11 pr-10 text-base shadow-sm md:text-[15px]"
       />
       {value && (
         <button
           type="button"
           onClick={() => setValue('')}
           aria-label="Clear search"
-          className="text-text-muted hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+          className="text-text-muted hover:text-foreground absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors"
         >
           <X className="size-3.5" />
         </button>
