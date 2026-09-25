@@ -1,4 +1,4 @@
-import { AWARD_IDS, AWARDS } from '@mcphub/scoring';
+import { AWARD_IDS, AWARDS, STICKER_TIERS, STICKERS } from '@mcphub/scoring';
 import { TRUST_BANDS, TRUST_MAX_TOTAL } from '@mcphub/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { BadgeBuilder } from '@/components/badge-builder';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Medal } from '@/components/medal';
+import { Sticker } from '@/components/sticker';
 import {
   Accordion,
   AccordionContent,
@@ -159,6 +160,25 @@ export default function BadgesPage(): React.JSX.Element {
           </Link>
           .
         </p>
+      </section>
+
+      <section aria-labelledby="stickers-title" id="stickers" className="mt-14 scroll-mt-24">
+        <h2 id="stickers-title" className="text-xl font-semibold tracking-tight">
+          Score stickers
+        </h2>
+        <p className="text-text-muted mt-1 max-w-prose text-sm leading-relaxed">
+          Separate from the badges: every server that scores 70 or more earns a sticker for its
+          Trust Score, from silver Solid to a holographic Perfect 100. Hover one to peel it.
+        </p>
+        <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+          {STICKER_TIERS.map((tier) => (
+            <li key={tier} className="flex flex-col items-center text-center">
+              <Sticker tier={tier} size={128} />
+              <h3 className="mt-4 font-semibold">{STICKERS[tier].label}</h3>
+              <p className="text-text-muted mt-1 text-xs">{STICKERS[tier].criteria}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="builder" className="panel mt-12 rounded-2xl p-6">
