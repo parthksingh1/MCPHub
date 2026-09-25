@@ -4,15 +4,12 @@ import {
   ArrowRight,
   Award,
   Boxes,
-  GitFork,
   LayoutGrid,
   MonitorSmartphone,
   Search,
   ShieldCheck,
-  Sparkles,
   Star,
   TrendingUp,
-  Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,11 +20,11 @@ import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
 import { CATEGORY_ICON } from '@/lib/category-icons';
 import { CATEGORY_STYLE } from '@/lib/category-style';
+import { COLLECTIONS } from '@/lib/collections';
 import { formatRelativeTime } from '@/lib/format';
 import {
   getCategoryCounts,
   getFeaturedServers,
-  getRecentServers,
   getSiteStats,
   getTopServers,
   getTrendingServers,
@@ -65,42 +62,6 @@ const TRUST_PARTS = [
     detail: 'README, licence, types, tests, CI — the marks of care.',
     icon: Award,
     tone: 'text-rose-600 dark:text-rose-400',
-  },
-] as const;
-
-/** What MCPHub adds on top of a plain list, as a bento grid. */
-const FEATURES = [
-  {
-    title: 'An honest Trust Score',
-    text: 'Maintenance, popularity, security and quality — one open, reproducible number for every server.',
-    href: '/trust-score',
-    icon: Sparkles,
-    tone: 'text-emerald-600 dark:text-emerald-400',
-    wide: true,
-  },
-  {
-    title: 'Security scanned',
-    text: 'Every repo runs through an MCP-specific Semgrep ruleset and a dependency audit.',
-    href: '/security',
-    icon: ShieldCheck,
-    tone: 'text-rose-600 dark:text-rose-400',
-    wide: false,
-  },
-  {
-    title: 'Daily rankings',
-    text: 'See who leads today, and who climbed fastest this week.',
-    href: '/rankings',
-    icon: Trophy,
-    tone: 'text-amber-600 dark:text-amber-400',
-    wide: false,
-  },
-  {
-    title: 'Install in one copy',
-    text: 'Ready-made config for Claude Desktop, Cursor, VS Code, Windsurf and more — plus side-by-side compare.',
-    href: '/compare',
-    icon: GitFork,
-    tone: 'text-sky-600 dark:text-sky-400',
-    wide: true,
   },
 ] as const;
 
@@ -157,7 +118,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     lastIndexedAt: null,
   };
 
-  const [stats, categories, featured, recent, trending, sponsors] = await Promise.all([
+  const [stats, categories, featured, trending, sponsors] = await Promise.all([
     safeQuery('stats', emptyStats, () =>
       cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
     ),
@@ -171,9 +132,6 @@ export default async function HomePage(): Promise<React.JSX.Element> {
         const picked = await getFeaturedServers(6);
         return picked.length >= 3 ? picked : getTopServers(6);
       }),
-    ),
-    safeQuery('recent', [], () =>
-      cached(cacheKey('recent'), { ttl: CACHE_TTL.list }, () => getRecentServers(6)),
     ),
     safeQuery('trending', [], () =>
       cached(cacheKey('trending'), { ttl: CACHE_TTL.list }, () => getTrendingServers(6)),
@@ -329,47 +287,6 @@ export default async function HomePage(): Promise<React.JSX.Element> {
         </div>
       )}
 
-      {/* ── Why MCPHub: bento ────────────────────────────────────────────── */}
-      <section className="container py-16">
-        <SectionHeading
-          eyebrow="Why MCPHub"
-          title="More than a list of links"
-          detail="Everything you need to decide what to install — and what to avoid."
-        />
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {FEATURES.map((feature) => (
-            <Link
-              key={feature.title}
-              href={feature.href}
-              className={cn(
-                'bg-surface hover:border-hover hover:shadow-card-hover group relative overflow-hidden rounded-2xl border p-6 transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-0.5',
-                feature.wide && 'md:col-span-2',
-              )}
-            >
-              <span
-                className={cn(
-                  'bg-surface-hover ring-border flex size-11 items-center justify-center rounded-xl ring-1 ring-inset',
-                  feature.tone,
-                )}
-              >
-                <feature.icon className="size-5" aria-hidden />
-              </span>
-              <h3 className="mt-5 text-lg font-semibold tracking-tight">{feature.title}</h3>
-              <p className="text-text-muted mt-1.5 max-w-prose text-sm leading-relaxed">
-                {feature.text}
-              </p>
-              <span className="text-foreground mt-5 inline-flex items-center gap-1 text-sm font-medium">
-                Learn more
-                <ArrowRight
-                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
       {/* ── Highest rated ────────────────────────────────────────────────── */}
       {featured.length > 0 && (
         <section className="container py-16">
@@ -388,6 +305,42 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           </div>
         </section>
       )}
+
+      {/* ── Collections ──────────────────────────────────────────────────── */}
+      <section className="container py-16">
+        <SectionHeading
+          eyebrow="Curated"
+          title="Collections"
+          detail="The best servers for common jobs, ranked by Trust Score and updated daily."
+          href="/collections"
+          linkLabel="All collections"
+        />
+
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {COLLECTIONS.slice(0, 4).map((collection) => (
+            <Link
+              key={collection.slug}
+              href={`/collections/${collection.slug}`}
+              className="bg-surface hover:border-hover group flex flex-col rounded-2xl border p-5 transition-colors"
+            >
+              <span className="bg-surface-hover flex size-10 items-center justify-center rounded-xl border">
+                <collection.icon className="size-5" aria-hidden />
+              </span>
+              <h3 className="mt-4 font-semibold tracking-tight">{collection.title}</h3>
+              <p className="text-text-muted mt-1 flex-1 text-sm leading-relaxed">
+                {collection.tagline}
+              </p>
+              <span className="text-foreground mt-4 inline-flex items-center gap-1 text-sm font-medium">
+                Explore
+                <ArrowRight
+                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* ── Categories ───────────────────────────────────────────────────── */}
       <section className="container py-16">
@@ -488,25 +441,6 @@ export default async function HomePage(): Promise<React.JSX.Element> {
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {trending.map((server, index) => (
-              <ServerCard key={server.id} server={server} index={index} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── Recently added ───────────────────────────────────────────────── */}
-      {recent.length > 0 && (
-        <section className="container py-16">
-          <SectionHeading
-            eyebrow="Fresh from the crawler"
-            title="Recently added"
-            detail="The newest servers to reach the index."
-            href="/rankings?view=new"
-            linkLabel="View all"
-          />
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recent.map((server, index) => (
               <ServerCard key={server.id} server={server} index={index} />
             ))}
           </div>
