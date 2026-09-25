@@ -34,3 +34,28 @@ const LANGUAGE_COLORS: Record<string, string> = {
 export function languageColor(language: string | null | undefined): string {
   return (language && LANGUAGE_COLORS[language.toLowerCase()]) || '#8b949e';
 }
+
+/** Proper display names for the languages the crawler normalises to lowercase. */
+const LANGUAGE_LABELS: Record<string, string> = {
+  typescript: 'TypeScript',
+  javascript: 'JavaScript',
+  python: 'Python',
+  go: 'Go',
+  rust: 'Rust',
+  java: 'Java',
+  kotlin: 'Kotlin',
+  csharp: 'C#',
+  'c#': 'C#',
+  'c++': 'C++',
+  ruby: 'Ruby',
+  php: 'PHP',
+  swift: 'Swift',
+  other: 'Other',
+};
+
+/** The display name for a language, e.g. `typescript` → `TypeScript`. */
+export function languageLabel(language: string): string {
+  const known = LANGUAGE_LABELS[language.toLowerCase()];
+  if (known) return known;
+  return language.charAt(0).toUpperCase() + language.slice(1);
+}
