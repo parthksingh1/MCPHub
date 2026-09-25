@@ -8,4 +8,5 @@
 export * from './compute';
 export * from './awards';
 export * from './bands';
+export * from './stickers';
 export * from './types';
