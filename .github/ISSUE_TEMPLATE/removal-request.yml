@@ -1,4 +1,4 @@
-name: Listing removal or correction
+name: Listing removal, correction or dispute
 description: Maintainers — ask for your MCP server listing to be corrected, deprecated, or removed.
 title: '[Listing] '
 labels: [listing-request]
@@ -33,6 +33,7 @@ body:
         - Mark the listing as deprecated
         - Correct information on the listing
         - Dispute a security scan result
+        - Dispute the Trust Score or a badge
         - Remove a review
     validations:
       required: true
