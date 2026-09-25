@@ -48,6 +48,11 @@ export default function RemovalPage(): React.JSX.Element {
                 scan result you believe is a false positive.
               </li>
               <li>
+                <strong>Dispute a score or badge</strong> — if you think your Trust Score, a badge
+                or a scan finding is wrong, tell us why. We re-check the data, re-run the scan, and
+                correct anything that is wrong.
+              </li>
+              <li>
                 <strong>Mark as deprecated</strong> — keep the page, point people elsewhere.
               </li>
               <li>
