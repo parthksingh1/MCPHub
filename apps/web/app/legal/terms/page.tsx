@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { LegalPage } from '@/components/legal-page';
-import { CONTACT_EMAIL, REPO_URL } from '@/lib/site';
+import { CONTACT_EMAIL, REMOVAL_REQUEST_URL, REPO_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Terms of use',
@@ -17,7 +17,7 @@ export default function TermsPage(): React.JSX.Element {
     <LegalPage
       title="Terms of use"
       path="/legal/terms"
-      updated="2026-09-19"
+      updated="2026-09-26"
       summary={
         <p>
           MCPHub is a free directory of third-party software. We don&apos;t make, host or run the
@@ -70,8 +70,20 @@ export default function TermsPage(): React.JSX.Element {
                 date.
               </p>
               <p>
+                Every score is computed the same way for every server, from data anyone can check —
+                repository activity, stars, licence, documentation and automated scan results — and
+                the methodology is published in full. A score reflects those signals on the day it
+                was computed; it is not a statement of fact about the quality, safety or intentions
+                of any project or person.
+              </p>
+              <p>
+                Automated scan findings are pattern matches, not confirmed vulnerabilities. They can
+                be false positives, or describe behaviour a server performs by design.
+              </p>
+              <p>
                 Scores and rankings are never sold and cannot be influenced by payment. A low score
-                is not an accusation of wrongdoing against any maintainer.
+                is not an accusation of wrongdoing against any maintainer. Do not rely on a score or
+                badge as your only reason to install, or not install, any software.
               </p>
             </>
           ),
@@ -190,6 +202,65 @@ export default function TermsPage(): React.JSX.Element {
               before it arose, or USD 50 if you paid nothing. Nothing here limits liability that
               cannot be limited by law.
             </p>
+          ),
+        },
+        {
+          id: 'disputes',
+          title: 'Disputes and corrections',
+          body: (
+            <>
+              <p>
+                If you maintain a listed project and believe a score, badge, scan finding or any
+                other information about it is wrong, tell us through the{' '}
+                <Link href="/legal/removal">listing request process</Link>. We review every request,
+                correct factual errors, re-run scans on request, and can remove a listing entirely.
+                We aim to respond within 7 days.
+              </p>
+              <p>
+                Please contact us before taking any other action — almost every problem can be fixed
+                quickly this way.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'law',
+          title: 'Governing law',
+          body: (
+            <p>
+              These terms are governed by the laws of India. Any dispute that cannot be resolved
+              informally is subject to the exclusive jurisdiction of the courts of India. Nothing
+              here removes rights you have under the consumer laws of the country you live in.
+            </p>
+          ),
+        },
+        {
+          id: 'grievance',
+          title: 'Grievance Officer',
+          body: (
+            <>
+              <p>
+                In line with India&apos;s Information Technology (Intermediary Guidelines and
+                Digital Media Ethics Code) Rules, 2021, complaints about content on MCPHub can be
+                sent to our Grievance Officer:
+              </p>
+              <ul>
+                <li>Name: Parth Kumar Singh</li>
+                <li>
+                  Contact:{' '}
+                  {CONTACT_EMAIL ? (
+                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+                  ) : (
+                    <a href={REMOVAL_REQUEST_URL} target="_blank" rel="noreferrer noopener">
+                      the listing request form
+                    </a>
+                  )}
+                </li>
+              </ul>
+              <p>
+                We acknowledge complaints within 24 hours and aim to resolve them within 15 days.
+              </p>
+            </>
           ),
         },
         {
