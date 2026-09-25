@@ -1,5 +1,5 @@
 import { parseGitHubUrl } from '@mcphub/crawler';
-import { computeAwards, getTrustLabel, isScanClean } from '@mcphub/scoring';
+import { computeAwards, getTrustLabel, isScanClean, popularTier } from '@mcphub/scoring';
 import { CACHE_TTL, CATEGORY_LABELS, serverSecuritySchema, type Category } from '@mcphub/shared';
 import {
   AlertTriangle,
@@ -27,10 +27,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { AwardList, TrustedMark } from '@/components/awards';
+import { TrustedMark } from '@/components/awards';
 import { BadgeCta } from '@/components/badge-cta';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { InstallCommand } from '@/components/install-command';
+import { Achievements } from '@/components/medal';
 import { Readme } from '@/components/readme';
 import { ServerActions } from '@/components/server-actions';
 import { ServerCard } from '@/components/server-card';
@@ -548,7 +549,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
             <InstallCommand commands={server.installCommands} slug={server.slug} />
           </section>
 
-          <AwardList awards={awards} />
+          <Achievements earned={awards} popularTier={popularTier(server.githubStars)} />
 
           <Card>
             <CardContent className="space-y-1 p-2">
