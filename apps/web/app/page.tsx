@@ -9,13 +9,16 @@ import {
   Search,
   ShieldCheck,
   Star,
+  Terminal,
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 
 import { HeroPanel } from '@/components/hero-panel';
+import { McpFlow } from '@/components/mcp-flow';
 import { Medal } from '@/components/medal';
 import { ServerCard } from '@/components/server-card';
+import { ServerMarquee } from '@/components/server-marquee';
 import { SponsoredStrip } from '@/components/sponsored-strip';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
@@ -119,7 +122,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     lastIndexedAt: null,
   };
 
-  const [stats, categories, featured, trusted, sponsors] = await Promise.all([
+  const [stats, categories, featured, trusted, sponsors, marquee] = await Promise.all([
     safeQuery('stats', emptyStats, () =>
       cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
     ),
@@ -138,6 +141,9 @@ export default async function HomePage(): Promise<React.JSX.Element> {
       cached(cacheKey('trusted'), { ttl: CACHE_TTL.list }, () => getTrustedServers(6)),
     ),
     safeQuery('spotlight', [], () => cached(cacheKey('spotlight'), { ttl: 60 }, getActiveSponsors)),
+    safeQuery('marquee', [], () =>
+      cached(cacheKey('marquee'), { ttl: CACHE_TTL.category }, () => getTopServers(30)),
+    ),
   ]);
 
   const topCategories = [...categories].sort((a, b) => b.count - a.count).slice(0, 8);
@@ -279,6 +285,62 @@ export default async function HomePage(): Promise<React.JSX.Element> {
             />
           )}
         </div>
+      </section>
+
+      {/* ── Marquee: real servers, gliding past ─────────────────────────── */}
+      <div className="border-y">
+        <div className="container">
+          <ServerMarquee servers={marquee} total={stats.totalServers} />
+        </div>
+      </div>
+
+      {/* ── How it works: animated beam ──────────────────────────────────── */}
+      <section className="container py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="eyebrow">How it works</p>
+          <h2 className="text-section-title mt-2 font-semibold">
+            One hub between your AI and every tool
+          </h2>
+          <p className="text-text-muted mt-3 leading-relaxed">
+            Your AI client speaks MCP. MCPHub tells you which servers are safe to plug into it —
+            before you run a single line of someone else&apos;s code.
+          </p>
+        </div>
+
+        <div className="mt-12">
+          <McpFlow servers={trusted.length >= 5 ? trusted : featured} />
+        </div>
+
+        <ol className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-3">
+          {[
+            {
+              icon: Search,
+              title: 'Find',
+              text: `Search ${stats.totalServers.toLocaleString()} servers by what they connect to.`,
+            },
+            {
+              icon: ShieldCheck,
+              title: 'Check',
+              text: 'Every server is scored, security-scanned and badged — in the open.',
+            },
+            {
+              icon: Terminal,
+              title: 'Install',
+              text: 'Copy a ready-made config for Claude, Cursor, VS Code and more.',
+            },
+          ].map((step, index) => (
+            <li key={step.title} className="bg-surface rounded-2xl border p-5">
+              <div className="flex items-center gap-3">
+                <span className="bg-surface-hover flex size-9 items-center justify-center rounded-xl border">
+                  <step.icon className="size-4" aria-hidden />
+                </span>
+                <span className="text-text-muted font-mono text-xs">0{index + 1}</span>
+                <span className="font-semibold">{step.title}</span>
+              </div>
+              <p className="text-text-muted mt-3 text-sm leading-relaxed">{step.text}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       {/* ── Sponsored (Spotlight) — labelled, separate from every ranking ── */}
