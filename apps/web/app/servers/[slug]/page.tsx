@@ -1,5 +1,12 @@
 import { parseGitHubUrl } from '@mcphub/crawler';
-import { computeAwards, getTrustLabel, isScanClean, popularTier } from '@mcphub/scoring';
+import {
+  STICKERS,
+  computeAwards,
+  getTrustLabel,
+  isScanClean,
+  popularTier,
+  scoreSticker,
+} from '@mcphub/scoring';
 import { CACHE_TTL, CATEGORY_LABELS, serverSecuritySchema, type Category } from '@mcphub/shared';
 import {
   AlertTriangle,
@@ -35,6 +42,7 @@ import { Achievements } from '@/components/medal';
 import { Readme } from '@/components/readme';
 import { ServerActions } from '@/components/server-actions';
 import { ServerCard } from '@/components/server-card';
+import { Sticker } from '@/components/sticker';
 import { TrustScoreRing } from '@/components/trust-score-ring';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +52,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cacheKey, cached } from '@/lib/cache';
 import { formatCount, formatDate, formatLicense, formatRelativeTime } from '@/lib/format';
 import { getRelatedServers, getServerBySlug } from '@/lib/queries/servers';
-import { REMOVAL_REQUEST_URL, SITE_URL } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 /**
@@ -155,6 +163,8 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
     deprecated: server.deprecated,
     scanClean: isScanClean(security.success ? security.data : null),
   });
+
+  const sticker = scoreSticker(server.trustTotal, server.deprecated);
 
   const tools = server.capabilities?.tools ?? [];
   const primaryCategory = server.categories[0] as Category | undefined;
@@ -320,8 +330,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
 
         <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:items-end">
           <TrustScoreRing score={server.trustTotal} size={76} strokeWidth={5} showLabel />
-          {/* Scores are opinions from public data: say so where the number is,
-              and give the maintainer a way to challenge it. */}
+          {/* Scores are opinions from public data: say so where the number is. */}
           <p className="text-text-muted max-w-[14rem] text-xs leading-relaxed sm:text-right">
             Automated score from public data ·{' '}
             <Link
@@ -329,16 +338,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
               className="hover:text-foreground underline underline-offset-2"
             >
               how it works
-            </Link>{' '}
-            ·{' '}
-            <a
-              href={REMOVAL_REQUEST_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="hover:text-foreground underline underline-offset-2"
-            >
-              dispute
-            </a>
+            </Link>
           </p>
         </div>
       </header>
@@ -501,16 +501,7 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
                     <p className="bg-surface-hover text-text-secondary mb-5 rounded-lg border p-3 text-sm leading-relaxed">
                       These are <strong>automated pattern matches</strong> from our open ruleset,
                       not confirmed vulnerabilities. Many are false positives, or intended behaviour
-                      for what the server does (a shell tool runs commands by design). Maintainer?{' '}
-                      <a
-                        href={REMOVAL_REQUEST_URL}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="text-foreground underline underline-offset-2"
-                      >
-                        Dispute a finding
-                      </a>
-                      .
+                      for what the server does (a shell tool runs commands by design).
                     </p>
                     <ul className="space-y-4">
                       {findings.slice(0, 20).map((finding, index) => (
@@ -617,6 +608,29 @@ export default async function ServerDetailPage({ params }: PageProps): Promise<R
             </h2>
             <InstallCommand commands={server.installCommands} slug={server.slug} />
           </section>
+
+          {sticker && (
+            <section
+              aria-labelledby="sticker-heading"
+              className="flex items-center gap-5 rounded-2xl border p-5"
+            >
+              <Sticker tier={sticker} score={server.trustTotal} size={104} className="shrink-0" />
+              <div className="min-w-0">
+                <h2 id="sticker-heading" className="font-semibold tracking-tight">
+                  {STICKERS[sticker].label} sticker
+                </h2>
+                <p className="text-text-muted mt-1 text-sm leading-relaxed">
+                  Earned for a Trust Score of {server.trustTotal}. Hover to peel.
+                </p>
+                <Link
+                  href="/badges#stickers"
+                  className="text-text-muted hover:text-foreground mt-2 inline-block text-xs underline-offset-2 hover:underline"
+                >
+                  All stickers
+                </Link>
+              </div>
+            </section>
+          )}
 
           <Achievements earned={awards} popularTier={popularTier(server.githubStars)} />
 
