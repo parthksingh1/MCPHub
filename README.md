@@ -56,7 +56,9 @@ whether it looks carefully built — as one number you can sort by.
 - 📊 **Trust Score** — 0–100 from four transparent, open-source components
 - ⚡ **One-click install** — the exact command for each of six MCP clients,
   plus a downloadable config file
-- 🏷️ **Embeddable badges** — live Trust Score badges in three styles (`flat`, `flat-square`, `for-the-badge`); snippet builder at `/badges`
+- 🛡️ **MCPHub badges** — servers earn _MCPHub Trusted_, _Security clean_, _Top rated_ and more from published, tested rules; nothing can be bought
+- 🏷️ **Embeddable README badges** — `?type=trusted` shows the Trusted badge once earned; three styles and a snippet builder at `/badges`
+- 🗂️ **Collections** — curated stacks for common jobs (coding agents, DevOps, databases…), filled live with the top-scoring servers
 - 🔌 **Public API** — everything the site uses, documented and open
 - 🌓 **Dark and light** — full parity, not an afterthought
 
