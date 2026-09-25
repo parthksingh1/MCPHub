@@ -14,6 +14,7 @@ import {
 import Link from 'next/link';
 
 import { HeroPanel } from '@/components/hero-panel';
+import { Medal } from '@/components/medal';
 import { ServerCard } from '@/components/server-card';
 import { SponsoredStrip } from '@/components/sponsored-strip';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,7 @@ import {
   getFeaturedServers,
   getSiteStats,
   getTopServers,
-  getTrendingServers,
+  getTrustedServers,
 } from '@/lib/queries/servers';
 import { getActiveSponsors } from '@/lib/queries/spotlight';
 import { safeQuery } from '@/lib/safe-query';
@@ -118,7 +119,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     lastIndexedAt: null,
   };
 
-  const [stats, categories, featured, trending, sponsors] = await Promise.all([
+  const [stats, categories, featured, trusted, sponsors] = await Promise.all([
     safeQuery('stats', emptyStats, () =>
       cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
     ),
@@ -133,8 +134,8 @@ export default async function HomePage(): Promise<React.JSX.Element> {
         return picked.length >= 3 ? picked : getTopServers(6);
       }),
     ),
-    safeQuery('trending', [], () =>
-      cached(cacheKey('trending'), { ttl: CACHE_TTL.list }, () => getTrendingServers(6)),
+    safeQuery('trusted', [], () =>
+      cached(cacheKey('trusted'), { ttl: CACHE_TTL.list }, () => getTrustedServers(6)),
     ),
     safeQuery('spotlight', [], () => cached(cacheKey('spotlight'), { ttl: 60 }, getActiveSponsors)),
   ]);
@@ -428,21 +429,47 @@ export default async function HomePage(): Promise<React.JSX.Element> {
         </div>
       </section>
 
-      {/* ── Trending ─────────────────────────────────────────────────────── */}
-      {trending.length > 0 && (
+      {/* ── MCPHub Trusted showcase ─────────────────────────────────────── */}
+      {trusted.length > 0 && (
         <section className="container py-16">
-          <SectionHeading
-            eyebrow="Biggest movers"
-            title="Trending this week"
-            detail="Servers whose Trust Score rose the most in the last seven days."
-            href="/rankings?view=rising"
-            linkLabel="All risers"
-          />
+          <div className="bg-surface relative overflow-hidden rounded-3xl border p-6 sm:p-10">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(520px 280px at 12% 0%, rgba(234,179,8,0.12), transparent 70%), radial-gradient(520px 280px at 100% 0%, hsl(var(--accent) / 0.1), transparent 70%)',
+              }}
+            />
+            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-5">
+                <Medal award="trusted" size={84} className="shrink-0" />
+                <div>
+                  <p className="eyebrow">The top honour</p>
+                  <h2 className="text-section-title mt-1 font-semibold">MCPHub Trusted</h2>
+                  <p className="text-text-muted mt-1.5 max-w-lg text-sm leading-relaxed">
+                    High Trust Score, a clean security scan, active maintenance and a proper licence
+                    — all four, checked daily.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/badges#awards"
+                className="text-foreground group inline-flex shrink-0 items-center gap-1 text-sm font-medium"
+              >
+                How badges work
+                <ArrowRight
+                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </Link>
+            </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {trending.map((server, index) => (
-              <ServerCard key={server.id} server={server} index={index} />
-            ))}
+            <div className="relative mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {trusted.map((server, index) => (
+                <ServerCard key={server.id} server={server} index={index} />
+              ))}
+            </div>
           </div>
         </section>
       )}
