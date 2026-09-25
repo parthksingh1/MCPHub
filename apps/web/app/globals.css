@@ -38,9 +38,11 @@
     --warn: 32 95% 40%;
     --danger: 0 72% 46%;
 
-    --glow-a: 160 84% 39%;
-    --glow-b: 199 89% 48%;
-    --glow-strength: 0.1;
+    /* A fresh green wash at the top of the page, so light mode is not flat white. */
+    --glow-a: 152 72% 42%;
+    --glow-b: 170 70% 40%;
+    --glow-strength: 0.22;
+    --top-wash: 0.1;
 
     --grid-line: rgb(15 23 42 / 0.045);
     --grid-size: 72px;
@@ -76,6 +78,7 @@
     --glow-a: 160 84% 45%;
     --glow-b: 199 89% 55%;
     --glow-strength: 0.16;
+    --top-wash: 0;
 
     --grid-line: rgb(148 163 184 / 0.05);
 
@@ -178,6 +181,7 @@
     z-index: 0;
     pointer-events: none;
     background:
+      linear-gradient(to bottom, hsl(var(--glow-a) / var(--top-wash)), transparent 560px),
       radial-gradient(
         620px 380px at 22% 0%,
         hsl(var(--glow-a) / var(--glow-strength)),
