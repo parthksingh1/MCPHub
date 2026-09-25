@@ -23,6 +23,6 @@ describe('getTrustLabel', () => {
   it('labels each band', () => {
     expect(getTrustLabel(90)).toBe('Trusted');
     expect(getTrustLabel(60)).toBe('Reasonable');
-    expect(getTrustLabel(10)).toBe('Use with caution');
+    expect(getTrustLabel(10)).toBe('Review before use');
   });
 });

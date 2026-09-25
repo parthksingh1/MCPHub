@@ -85,7 +85,7 @@ export default function TrustScorePage(): React.JSX.Element {
             label: 'Reasonable',
             detail: `${TRUST_BANDS.medium}–${TRUST_BANDS.high - 1}`,
           },
-          { score: 31, label: 'Use with caution', detail: `Below ${TRUST_BANDS.medium}` },
+          { score: 31, label: 'Review before use', detail: `Below ${TRUST_BANDS.medium}` },
         ].map((band) => (
           <div
             key={band.label}

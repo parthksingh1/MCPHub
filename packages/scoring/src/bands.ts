@@ -18,5 +18,5 @@ export function getTrustLabel(total: number): string {
   const band = getTrustBand(total);
   if (band === 'high') return 'Trusted';
   if (band === 'medium') return 'Reasonable';
-  return 'Use with caution';
+  return 'Review before use';
 }
