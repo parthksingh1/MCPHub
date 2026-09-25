@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { AWARD_IDS, AWARDS, computeAwards, isScanClean, type AwardInput } from '../awards';
+import {
+  AWARD_IDS,
+  AWARDS,
+  computeAwards,
+  isScanClean,
+  popularTier,
+  type AwardInput,
+} from '../awards';
 
 const NOW = new Date('2026-09-19T00:00:00Z');
 const daysAgo = (days: number): string => new Date(NOW.getTime() - days * 86_400_000).toISOString();
@@ -124,5 +131,14 @@ describe('computeAwards', () => {
       expect(AWARDS[id].id).toBe(id);
       expect(AWARDS[id].criteria.length).toBeGreaterThan(10);
     }
+  });
+});
+
+describe('popularTier', () => {
+  it('levels up with stars', () => {
+    expect(popularTier(999)).toBeNull();
+    expect(popularTier(1000)).toBe('bronze');
+    expect(popularTier(10_000)).toBe('silver');
+    expect(popularTier(50_000)).toBe('gold');
   });
 });

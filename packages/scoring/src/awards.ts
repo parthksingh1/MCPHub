@@ -81,7 +81,7 @@ export const AWARDS: Record<AwardId, AwardDefinition> = {
     id: 'popular',
     label: 'Popular',
     summary: `${T.popularMinStars.toLocaleString('en-US')}+ GitHub stars.`,
-    criteria: `At least ${T.popularMinStars.toLocaleString('en-US')} GitHub stars.`,
+    criteria: `At least ${T.popularMinStars.toLocaleString('en-US')} GitHub stars. Levels up to silver at 10,000 and gold at 50,000.`,
   },
   maintained: {
     id: 'maintained',
@@ -96,6 +96,21 @@ export const AWARDS: Record<AwardId, AwardDefinition> = {
     criteria: `Trust Score rose by ${T.risingMinGain} points or more since the previous weekly snapshot.`,
   },
 };
+
+/** Medal tiers, like a game: the Popular badge levels up with stars. */
+export type AwardTier = 'bronze' | 'silver' | 'gold';
+
+/** Star thresholds for each Popular tier, highest first. */
+export const POPULAR_TIERS: readonly { tier: AwardTier; minStars: number }[] = [
+  { tier: 'gold', minStars: 50_000 },
+  { tier: 'silver', minStars: 10_000 },
+  { tier: 'bronze', minStars: T.popularMinStars },
+];
+
+/** The Popular tier for a star count, or null below the bronze bar. */
+export function popularTier(stars: number): AwardTier | null {
+  return POPULAR_TIERS.find((level) => stars >= level.minStars)?.tier ?? null;
+}
 
 /** The minimal shape of a security scan result the rules need. */
 export interface ScanSummary {
