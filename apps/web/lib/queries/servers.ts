@@ -24,6 +24,24 @@ import {
   type SQL,
 } from 'drizzle-orm';
 
+/**
+ * Whether the latest scan is current and clean, computed in SQL so lists never
+ * have to load full scan reports. Mirrors `isScanClean` in @mcphub/scoring
+ * exactly: unscanned or stale is never clean.
+ */
+const scanCleanSql = sql<boolean>`coalesce(
+    (${servers.security}->>'scanned')::boolean
+    and (${servers.security}->>'lastScanAt')::timestamptz
+      > now() - make_interval(days => ${AWARD_THRESHOLDS.scanMaxAgeDays})
+    and not jsonb_path_exists(
+      ${servers.security},
+      '$.findings[*] ? (@.severity == "critical" || @.severity == "high")'
+    )
+    and coalesce((${servers.security}->'dependencyAudit'->>'critical')::int, 0)
+      + coalesce((${servers.security}->'dependencyAudit'->>'high')::int, 0) = 0,
+    false
+  )`;
+
 /** The column set returned for cards, lists, and search results. */
 const summaryColumns = {
   id: servers.id,
@@ -48,21 +66,7 @@ const summaryColumns = {
   deprecated: servers.deprecated,
   updatedAt: servers.updatedAt,
   license: servers.license,
-  // Whether the latest scan is current and clean, computed in SQL so lists
-  // never have to load full scan reports. Mirrors `isScanClean` in
-  // @mcphub/scoring exactly: unscanned or stale is never clean.
-  scanClean: sql<boolean>`coalesce(
-    (${servers.security}->>'scanned')::boolean
-    and (${servers.security}->>'lastScanAt')::timestamptz
-      > now() - make_interval(days => ${AWARD_THRESHOLDS.scanMaxAgeDays})
-    and not jsonb_path_exists(
-      ${servers.security},
-      '$.findings[*] ? (@.severity == "critical" || @.severity == "high")'
-    )
-    and coalesce((${servers.security}->'dependencyAudit'->>'critical')::int, 0)
-      + coalesce((${servers.security}->'dependencyAudit'->>'high')::int, 0) = 0,
-    false
-  )`.as('scan_clean'),
+  scanClean: scanCleanSql.as('scan_clean'),
 };
 
 /** Columns in the summary that map straight onto table columns. */
@@ -404,4 +408,34 @@ export async function getAllSlugs(): Promise<{ slug: string; updatedAt: Date }[]
     .select({ slug: servers.slug, updatedAt: servers.updatedAt })
     .from(servers)
     .where(eq(servers.deprecated, false));
+}
+
+/**
+ * Servers that currently hold the MCPHub Trusted badge, best first.
+ *
+ * The same rule as `computeAwards` in @mcphub/scoring, expressed in SQL so the
+ * database does the filtering: score, a current clean scan, recent activity,
+ * a declared licence, and not deprecated.
+ */
+export async function getTrustedServers(limit = 6): Promise<ServerSummaryRow[]> {
+  const db = getDatabase();
+
+  return db
+    .select(summaryColumns)
+    .from(servers)
+    .where(
+      and(
+        eq(servers.deprecated, false),
+        gte(servers.trustTotal, AWARD_THRESHOLDS.trustedMinScore),
+        scanCleanSql,
+        gte(
+          servers.lastCommitAt,
+          new Date(Date.now() - AWARD_THRESHOLDS.trustedMaxCommitAgeDays * 86_400_000),
+        ),
+        isNotNull(servers.license),
+        ne(servers.license, ''),
+      ),
+    )
+    .orderBy(desc(servers.trustTotal), desc(servers.githubStars))
+    .limit(limit);
 }
