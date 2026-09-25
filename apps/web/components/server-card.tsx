@@ -106,7 +106,7 @@ export function ServerCard({ server, index = 0, className }: ServerCardProps): R
                   aria-label="Verified by MCPHub"
                 />
               )}
-              {trusted && <TrustedMark />}
+              {trusted && <TrustedMark compact />}
             </h3>
             <p className="text-text-muted mt-0.5 truncate text-xs">
               {server.isOfficial ? 'Official · ' : ''}
