@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { BrowseFilters } from '@/components/browse-filters';
 import { PageHeader } from '@/components/page-header';
+import { Pagination } from '@/components/pagination';
 import { SearchInput } from '@/components/search-input';
 import { ServerCard } from '@/components/server-card';
 import { SortSelect } from '@/components/sort-select';
@@ -46,18 +47,21 @@ export default async function BrowsePage({ searchParams }: PageProps): Promise<R
     cached(cacheKey('categories'), { ttl: CACHE_TTL.category }, () => getCategoryCounts()),
   ]);
 
-  /** Builds the "load more" href by bumping the page number. */
-  const nextPageHref = (): string => {
+  /** The link to another page of the same results, keeping every filter. */
+  const hrefFor = (target: number): string => {
     const next = new URLSearchParams();
 
     for (const [key, value] of Object.entries(raw)) {
-      if (value === undefined) continue;
+      if (value === undefined || key === 'page') continue;
       for (const item of Array.isArray(value) ? value : [value]) next.append(key, item);
     }
 
-    next.set('page', String(query.page + 1));
-    return `/servers?${next}`;
+    if (target > 1) next.set('page', String(target));
+    return next.size > 0 ? `/servers?${next}` : '/servers';
   };
+
+  const first = (page.page - 1) * page.pageSize + 1;
+  const last = first + page.items.length - 1;
 
   return (
     <main className="container py-8">
@@ -80,7 +84,7 @@ export default async function BrowsePage({ searchParams }: PageProps): Promise<R
           <p className="text-text-muted mt-4 text-sm" aria-live="polite">
             {page.total === 0
               ? 'No servers match these filters'
-              : `Showing ${page.items.length} of ${page.total.toLocaleString()} servers`}
+              : `Showing ${first.toLocaleString()}–${last.toLocaleString()} of ${page.total.toLocaleString()} servers`}
           </p>
 
           {page.items.length === 0 ? (
@@ -103,18 +107,15 @@ export default async function BrowsePage({ searchParams }: PageProps): Promise<R
                 ))}
               </div>
 
-              {page.hasMore && (
-                <div className="mt-10 flex justify-center">
-                  <Button asChild variant="secondary" size="lg">
-                    <Link href={nextPageHref()} scroll={false}>
-                      Load more servers
-                    </Link>
-                  </Button>
-                </div>
-              )}
+              <Pagination
+                page={page.page}
+                totalPages={page.totalPages}
+                hrefFor={hrefFor}
+                className="mt-10"
+              />
 
-              <p className="text-text-muted mt-6 text-center text-xs">
-                Page {page.page} of {page.totalPages.toLocaleString()}
+              <p className="text-text-muted mt-4 text-center text-xs">
+                Page {page.page.toLocaleString()} of {page.totalPages.toLocaleString()}
               </p>
             </>
           )}
