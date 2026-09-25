@@ -113,6 +113,16 @@ const config: Config = {
         ring: '0 0 28px -8px currentColor',
       },
       keyframes: {
+        // Infinite logo marquee: the track holds two copies, so -50% loops seamlessly.
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        // A pulse of light travelling along an SVG path (stroke-dashoffset).
+        beam: {
+          from: { strokeDashoffset: '420' },
+          to: { strokeDashoffset: '0' },
+        },
         'fade-up': {
           from: { opacity: '0', transform: 'translateY(10px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
@@ -144,6 +154,8 @@ const config: Config = {
         },
       },
       animation: {
+        marquee: 'marquee var(--marquee-duration, 60s) linear infinite',
+        beam: 'beam 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite',
         'fade-up': 'fade-up 320ms cubic-bezier(0.22, 1, 0.36, 1) both',
         'fade-in': 'fade-in 400ms ease-out both',
         shimmer: 'shimmer 1.8s infinite',
