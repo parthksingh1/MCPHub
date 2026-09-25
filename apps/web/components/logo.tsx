@@ -8,7 +8,8 @@ interface LogoProps {
 }
 
 /**
- * The MCPHub mark: the layered "M", as a rounded app-icon tile.
+ * The MCPHub mark: the layered "M", on a transparent background so it sits
+ * directly on the header in both themes.
  *
  * Served from `/brand/mark.png` (a 128px export of the master logo), so it is
  * crisp on retina screens at header size and weighs a few kilobytes.
@@ -21,7 +22,7 @@ export function LogoMark({ className }: LogoProps): React.JSX.Element {
       width={128}
       height={128}
       priority
-      className={cn('size-7 shrink-0 rounded-[7px]', className)}
+      className={cn('size-7 shrink-0 object-contain', className)}
     />
   );
 }
@@ -30,7 +31,7 @@ export function LogoMark({ className }: LogoProps): React.JSX.Element {
 export function Logo({ className }: LogoProps): React.JSX.Element {
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <LogoMark className="size-8 rounded-lg" />
+      <LogoMark className="size-9" />
       <span className="text-[17px] font-bold leading-none tracking-tight">
         MCP
         <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
