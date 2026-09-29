@@ -162,8 +162,8 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           }}
         />
 
-        <div className="relative grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
-          <div className="animate-fade-up">
+        <div className="relative grid grid-cols-1 items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
+          <div className="animate-fade-up min-w-0">
             {/* Live status pill — proof the index is alive, above the fold. */}
             <Link
               href="/rankings?view=new"
