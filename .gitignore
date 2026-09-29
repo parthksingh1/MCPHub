@@ -43,3 +43,8 @@ supabase/.temp/
 # misc
 .vercel
 .sentryclirc
+
+# Local AI agent skills (installed with `npx skills add`), never part of the app
+.agents/
+.claude/
+skills-lock.json
