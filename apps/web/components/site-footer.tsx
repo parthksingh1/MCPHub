@@ -1,119 +1,101 @@
-import { CATEGORIES, CATEGORY_LABELS } from '@mcphub/shared';
 import { Github } from 'lucide-react';
 import Link from 'next/link';
 
 import { Logo } from '@/components/logo';
-import { EXPLORE_NAV, LEGAL_NAV, RESOURCE_NAV, SPOTLIGHT_LINK } from '@/lib/nav';
-import { CONTRIBUTING_URL, REPO_URL } from '@/lib/site';
+import { REPO_URL } from '@/lib/site';
 
-/** A titled column of footer links. */
-function FooterColumn({
-  title,
-  links,
-}: {
-  title: string;
-  links: { href: string; label: string; external?: boolean }[];
-}): React.JSX.Element {
-  return (
-    <div>
-      <h2 className="text-sm font-medium">{title}</h2>
-      <ul className="mt-3 space-y-2.5">
-        {links.map((link) => (
-          <li key={link.href}>
-            {link.external ? (
-              <a
-                href={link.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-text-muted hover:text-foreground text-sm transition-colors"
-              >
-                {link.label}
-              </a>
-            ) : (
-              <Link
-                href={link.href}
-                className="text-text-muted hover:text-foreground text-sm transition-colors"
-              >
-                {link.label}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+/** One footer link. */
+interface FooterLink {
+  href: string;
+  label: string;
+  external?: boolean;
 }
+
+/** The three short columns: the paths people actually take, and the legal ones. */
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: 'Product',
+    links: [
+      { href: '/servers', label: 'Servers' },
+      { href: '/rankings', label: 'Rankings' },
+      { href: '/collections', label: 'Collections' },
+      { href: '/badges', label: 'Badges' },
+      { href: '/spotlight', label: 'Spotlight' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { href: '/trust-score', label: 'Trust Score' },
+      { href: '/security', label: 'Security' },
+      { href: '/docs/api', label: 'Public API' },
+      { href: '/submit', label: 'Submit a server' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { href: '/legal/privacy', label: 'Privacy' },
+      { href: '/legal/terms', label: 'Terms' },
+      { href: '/legal/removal', label: 'Listing removal' },
+      { href: '/legal/sponsored', label: 'Sponsored content' },
+    ],
+  },
+];
 
 /**
  * Site footer.
  *
- * Carries the full information architecture — every page, including the legal
- * ones — plus the notices a directory of other people's work needs: no
- * affiliation with the projects listed, and marks belong to their owners.
+ * Deliberately short: the main paths and the legally required links, not a
+ * copy of the whole sitemap. Everything else is one click away in the header.
  */
 export function SiteFooter(): React.JSX.Element {
   return (
-    <footer className="mt-24 border-t">
-      <div className="container py-14">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
+    <footer className="mt-28 border-t">
+      <div className="container pb-10 pt-14">
+        <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div>
             <Link href="/" aria-label="MCPHub home">
               <Logo />
             </Link>
-            <p className="text-text-muted mt-4 max-w-xs text-sm leading-relaxed">
-              The trusted directory for Model Context Protocol servers. Scored, scanned, and ranked
+            <p className="text-text-muted mt-4 max-w-xs leading-relaxed">
+              The trusted directory for Model Context Protocol servers. Scored, scanned and ranked
               in the open.
             </p>
             <a
               href={REPO_URL}
               target="_blank"
               rel="noreferrer noopener"
-              className="text-text-muted hover:text-foreground mt-5 inline-flex items-center gap-2 text-sm transition-colors"
+              className="text-text-secondary hover:text-foreground mt-5 inline-flex items-center gap-2 text-sm transition-colors"
             >
               <Github className="size-4" aria-hidden />
-              Star on GitHub
+              Source on GitHub
             </a>
           </div>
 
-          <FooterColumn title="Explore" links={EXPLORE_NAV} />
-          <FooterColumn
-            title="Resources"
-            links={[...RESOURCE_NAV, { href: '/submit', label: 'Submit a server' }]}
-          />
-          <FooterColumn
-            title="Project"
-            links={[
-              SPOTLIGHT_LINK,
-              { href: REPO_URL, label: 'Source code', external: true },
-              { href: CONTRIBUTING_URL, label: 'Contributing', external: true },
-              { href: `${REPO_URL}/issues/new`, label: 'Report a bug', external: true },
-            ]}
-          />
-          <FooterColumn title="Legal" links={LEGAL_NAV} />
+          {COLUMNS.map((column) => (
+            <nav key={column.title} aria-label={column.title}>
+              <h2 className="text-sm font-medium">{column.title}</h2>
+              <ul className="mt-4 space-y-3">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-text-muted hover:text-foreground text-sm transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
 
-        <nav className="mt-12 border-t pt-8" aria-label="Browse by category">
-          <p className="eyebrow mb-3">Categories</p>
-          <ul className="flex flex-wrap gap-x-5 gap-y-2">
-            {CATEGORIES.map((slug) => (
-              <li key={slug}>
-                <Link
-                  href={`/categories/${slug}`}
-                  className="text-text-muted hover:text-foreground text-xs transition-colors"
-                >
-                  {CATEGORY_LABELS[slug]}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="text-text-muted mt-8 space-y-3 border-t pt-8 text-xs leading-relaxed">
-          <p>
-            MCPHub is an independent directory. It is not affiliated with Anthropic, the Model
-            Context Protocol project, or any server listed here. Product names, logos, and marks
-            belong to their respective owners. Listings are built from public GitHub and package
-            registry data; maintainers can{' '}
+        <div className="text-text-muted mt-14 flex flex-col gap-3 border-t pt-6 text-xs leading-relaxed sm:flex-row sm:items-start sm:justify-between">
+          <p className="max-w-2xl">
+            Independent directory, not affiliated with Anthropic or any server listed. Names and
+            logos belong to their owners; maintainers can{' '}
             <Link
               href="/legal/removal"
               className="hover:text-foreground underline underline-offset-2"
@@ -122,19 +104,16 @@ export function SiteFooter(): React.JSX.Element {
             </Link>
             .
           </p>
-          <p className="flex flex-wrap items-center justify-between gap-2">
-            <span>© {new Date().getFullYear()} MCPHub · MIT licensed</span>
-            <span>
-              Built by{' '}
-              <a
-                href="https://github.com/parthksingh1"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="hover:text-foreground underline underline-offset-2"
-              >
-                Parth Kumar Singh
-              </a>
-            </span>
+          <p className="shrink-0">
+            © {new Date().getFullYear()} MCPHub · Built by{' '}
+            <a
+              href="https://github.com/parthksingh1"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="hover:text-foreground underline underline-offset-2"
+            >
+              Parth Kumar Singh
+            </a>
           </p>
         </div>
       </div>
