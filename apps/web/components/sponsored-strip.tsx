@@ -31,7 +31,7 @@ export function SponsoredStrip({
       className={cn('rounded-2xl border border-dashed p-4 sm:p-5', className)}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-text-muted text-xs font-medium uppercase tracking-wider">Sponsored</p>
+        <p className="text-text-muted text-sm font-medium">Sponsored</p>
         <Link
           href="/spotlight"
           className="text-text-muted hover:text-foreground text-xs underline-offset-2 hover:underline"

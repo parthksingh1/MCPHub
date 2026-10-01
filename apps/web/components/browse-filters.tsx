@@ -129,9 +129,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
 
         {/* Categories */}
         <fieldset>
-          <legend className="text-text-muted mb-2 text-xs font-medium uppercase tracking-wide">
-            Category
-          </legend>
+          <legend className="text-foreground mb-2.5 text-sm font-medium">Category</legend>
           <div className="flex flex-wrap gap-1.5">
             {categories
               .filter((category) => category.count > 0)
@@ -161,9 +159,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
 
         {/* Client compatibility */}
         <fieldset>
-          <legend className="text-text-muted mb-2 text-xs font-medium uppercase tracking-wide">
-            Works with
-          </legend>
+          <legend className="text-foreground mb-2.5 text-sm font-medium">Works with</legend>
           <div className="space-y-1.5">
             {MCP_CLIENTS.map((client) => (
               <label
@@ -186,7 +182,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
         <div>
           <label
             htmlFor="filter-language"
-            className="text-text-muted mb-2 block text-xs font-medium uppercase tracking-wide"
+            className="text-foreground mb-2.5 block text-sm font-medium"
           >
             Language
           </label>
@@ -209,7 +205,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
         <div>
           <label
             htmlFor="filter-trust"
-            className="text-text-muted mb-2 flex items-center justify-between text-xs font-medium uppercase tracking-wide"
+            className="text-foreground mb-2.5 flex items-center justify-between text-sm font-medium"
           >
             Min Trust Score
             <span className="text-text-secondary font-mono tabular-nums">{minTrust}</span>
@@ -230,9 +226,7 @@ export function BrowseFilters({ categories, total }: BrowseFiltersProps): React.
 
         {/* Flags */}
         <fieldset className="space-y-1.5">
-          <legend className="text-text-muted mb-2 text-xs font-medium uppercase tracking-wide">
-            Trust
-          </legend>
+          <legend className="text-foreground mb-2.5 text-sm font-medium">Trust</legend>
           <label className="text-text-secondary flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
