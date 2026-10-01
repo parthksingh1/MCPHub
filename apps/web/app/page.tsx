@@ -2,7 +2,10 @@ import { CACHE_TTL, CATEGORY_LABELS } from '@mcphub/shared';
 import { Activity, ArrowRight, Award, Search, ShieldCheck, Star, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
+import { BadgeShowcase } from '@/components/badge-showcase';
 import { HeroPanel } from '@/components/hero-panel';
+import { IndexInsights } from '@/components/index-insights';
+import { InstallDemo } from '@/components/install-demo';
 import { McpFlow } from '@/components/mcp-flow';
 import { Medal } from '@/components/medal';
 import { ServerCard } from '@/components/server-card';
@@ -20,6 +23,7 @@ import {
   getSiteStats,
   getTopServers,
   getTrustedServers,
+  getIndexInsights,
 } from '@/lib/queries/servers';
 import { getActiveSponsors } from '@/lib/queries/spotlight';
 import { safeQuery } from '@/lib/safe-query';
@@ -110,7 +114,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     lastIndexedAt: null,
   };
 
-  const [stats, categories, featured, trusted, sponsors, marquee] = await Promise.all([
+  const [stats, categories, featured, trusted, sponsors, marquee, insights] = await Promise.all([
     safeQuery('stats', emptyStats, () =>
       cached(cacheKey('stats'), { ttl: CACHE_TTL.stats }, () => getSiteStats()),
     ),
@@ -131,6 +135,9 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     safeQuery('spotlight', [], () => cached(cacheKey('spotlight'), { ttl: 60 }, getActiveSponsors)),
     safeQuery('marquee', [], () =>
       cached(cacheKey('marquee'), { ttl: CACHE_TTL.category }, () => getTopServers(30)),
+    ),
+    safeQuery('insights', null, () =>
+      cached(cacheKey('insights'), { ttl: CACHE_TTL.category }, () => getIndexInsights()),
     ),
   ]);
 
@@ -323,6 +330,8 @@ export default async function HomePage(): Promise<React.JSX.Element> {
         </section>
       )}
 
+      {insights && <IndexInsights insights={insights} />}
+
       {/* ── Collections ──────────────────────────────────────────────────── */}
       <section className="container py-16">
         <SectionHeading
@@ -333,7 +342,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           linkLabel="All collections"
         />
 
-        <ul className="mt-8 grid border-t sm:grid-cols-2 sm:gap-x-12">
+        <ul className="mt-8 grid grid-cols-1 border-t sm:grid-cols-2 sm:gap-x-12">
           {COLLECTIONS.slice(0, 6).map((collection) => (
             <li key={collection.slug} className="border-b">
               <Link
@@ -441,6 +450,8 @@ export default async function HomePage(): Promise<React.JSX.Element> {
         </div>
       </section>
 
+      <InstallDemo />
+
       {/* ── MCPHub Trusted showcase ─────────────────────────────────────── */}
       {trusted.length > 0 && (
         <section className="container py-16">
@@ -485,6 +496,8 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           </div>
         </section>
       )}
+
+      <BadgeShowcase />
 
       {/* ── Maintainer call to action ────────────────────────────────────── */}
       <section className="container pb-8 pt-8">
