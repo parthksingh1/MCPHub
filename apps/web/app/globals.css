@@ -16,9 +16,11 @@
     /* Cool slate surfaces: a hint of blue gives depth without colouring the
        chrome. Colour comes from the brand gradient, the trust bands, and one
        hue per category (see lib/category-style.ts). */
-    --background: 220 33% 98%; /* #f7f9fc */
-    --surface: 0 0% 100%;
-    --surface-hover: 220 30% 96%;
+    /* Soft green-grey paper rather than stark white: easier on the eyes, and
+       it carries the green wash at the top of the page. */
+    --background: 150 12% 95%; /* #eff3f1 */
+    --surface: 150 20% 98.5%; /* #fafcfb */
+    --surface-hover: 150 12% 92.5%;
 
     --text-primary: 222 47% 11%; /* #0f172a */
     --text-primary-raw: #0f172a;
