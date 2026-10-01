@@ -27,14 +27,14 @@ export default function PrivacyPage(): React.JSX.Element {
     <LegalPage
       title="Privacy policy"
       path="/legal/privacy"
-      updated="2026-09-19"
+      updated="2026-10-01"
       summary={
         <p>
-          You can browse MCPHub without an account, and we don&apos;t use analytics, advertising
-          trackers, or third-party cookies. If you sign in with GitHub we keep your public GitHub
-          profile and the things you do on the site — favourites, ratings, reviews, reports and
-          submissions — so those features work. We never sell data. You can delete your account and
-          everything attached to it at any time.
+          You can browse MCPHub without an account. We count page views with cookieless, aggregate
+          analytics, and we use no advertising trackers or third-party cookies. If you sign in with
+          GitHub we keep your public GitHub profile and the things you do on the site — favourites,
+          ratings, reviews, reports and submissions — so those features work. We never sell data.
+          You can delete your account and everything attached to it at any time.
         </p>
       }
       sections={[
@@ -58,7 +58,7 @@ export default function PrivacyPage(): React.JSX.Element {
           title: 'When you just browse',
           body: (
             <>
-              <p>No account, no cookies set by us, no analytics. We do process:</p>
+              <p>No account and no cookies set by us. We do process:</p>
               <ul>
                 <li>
                   <strong>Your IP address</strong>, briefly, to rate-limit the API and prevent
@@ -68,6 +68,12 @@ export default function PrivacyPage(): React.JSX.Element {
                 <li>
                   <strong>Standard request logs</strong> kept by our hosting provider (URL, time,
                   user agent, IP) for security and debugging, under their own retention.
+                </li>
+                <li>
+                  <strong>Anonymous page views and page speed</strong>, through Vercel Web Analytics
+                  and Speed Insights: the page visited, referrer, country, browser and device type,
+                  and load-time measurements. No cookies are set, nothing identifies you personally,
+                  and visits are not linked across days or across sites.
                 </li>
                 <li>
                   <strong>Your theme preference</strong>, stored in your own browser&apos;s local
@@ -144,7 +150,7 @@ export default function PrivacyPage(): React.JSX.Element {
                   <strong>Supabase</strong> — database and GitHub sign-in.
                 </li>
                 <li>
-                  <strong>Vercel</strong> — web hosting and request logs.
+                  <strong>Vercel</strong> — web hosting, request logs, and cookieless analytics.
                 </li>
                 <li>
                   <strong>Upstash</strong> — cache and rate-limit counters.
