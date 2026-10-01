@@ -30,8 +30,8 @@
     --border-hover: rgb(15 23 42 / 0.18);
 
     /* Brand: emerald into cyan. The 700 shades so green text passes on white. */
-    --accent: 163 94% 24%; /* #047857 */
-    --accent-to: 192 82% 31%; /* #0e7490 */
+    --accent: 161 72% 27%; /* #137a5c — one accent, AA on white */
+    --accent-to: 161 72% 27%;
     --accent-foreground: 0 0% 100%;
 
     --success: 163 94% 24%;
@@ -67,8 +67,8 @@
     --border: rgb(148 163 184 / 0.12);
     --border-hover: rgb(148 163 184 / 0.24);
 
-    --accent: 158 64% 52%; /* #34d399 */
-    --accent-to: 188 86% 53%; /* #22d3ee */
+    --accent: 157 55% 52%; /* #4cc49a */
+    --accent-to: 157 55% 52%;
     --accent-foreground: 222 14% 9%;
 
     --success: 158 64% 52%;
@@ -76,7 +76,7 @@
     --danger: 0 84% 64%;
 
     --glow-a: 160 84% 45%;
-    --glow-b: 199 89% 55%;
+    --glow-b: 168 55% 45%;
     --glow-strength: 0.16;
     --top-wash: 0;
 
@@ -105,6 +105,16 @@
   }
 
   /* A single, unambiguous focus treatment across the whole app. */
+  /* No orphaned last words: balanced headings, tidy paragraph rag. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+
   :focus-visible {
     @apply ring-accent ring-offset-background outline-none ring-2 ring-offset-2;
   }
@@ -231,18 +241,25 @@
     opacity: 1;
   }
 
-  /** Brand emphasis inside a headline: emerald into cyan. */
+  /** Emphasis inside a headline: the one accent, solid. */
   .text-gradient {
-    background-image: linear-gradient(100deg, hsl(var(--accent)), hsl(var(--accent-to)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: hsl(var(--accent));
   }
 
-  /** The brand fill for the one primary call to action on a page. */
+  /** The fill for the one primary call to action on a page: solid accent,
+   *  a tinted shadow, and a physical press. */
   .bg-brand {
-    background-image: linear-gradient(100deg, hsl(var(--accent)), hsl(var(--accent-to)));
+    background-color: hsl(var(--accent));
     color: hsl(var(--accent-foreground));
+    box-shadow: 0 8px 20px -10px hsl(var(--accent) / 0.65);
+    transition:
+      transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 160ms ease,
+      opacity 160ms ease;
+  }
+  .bg-brand:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 4px 10px -8px hsl(var(--accent) / 0.6);
   }
 
   /** A soft coloured halo behind featured content. */
@@ -330,7 +347,7 @@
 
   /** A monospace eyebrow label above a section heading. */
   .eyebrow {
-    @apply text-accent font-mono text-xs font-medium uppercase tracking-[0.16em];
+    @apply text-accent text-sm font-medium;
   }
 
   /**
