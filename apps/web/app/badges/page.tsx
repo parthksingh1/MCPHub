@@ -7,12 +7,6 @@ import { BadgeBuilder } from '@/components/badge-builder';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Medal } from '@/components/medal';
 import { Sticker } from '@/components/sticker';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { BADGE_COLOURS, BADGE_STYLES, renderBadge } from '@/lib/badge';
 import { SITE_URL } from '@/lib/site';
 
@@ -237,48 +231,50 @@ export default function BadgesPage(): React.JSX.Element {
         <h2 id="faq" className="text-xl font-semibold tracking-tight">
           Questions
         </h2>
-        <Accordion type="single" collapsible className="mt-4">
-          <AccordionItem value="update">
-            <AccordionTrigger>How often does the badge update?</AccordionTrigger>
-            <AccordionContent>
+        <dl className="mt-6 divide-y border-y">
+          <div className="grid gap-2 py-6 md:grid-cols-[1fr_1.4fr] md:gap-10">
+            <dt className="font-semibold tracking-tight">How often does the badge update?</dt>
+            <dd className="text-text-muted leading-relaxed">
               Scores are recomputed daily. GitHub caches README images on its own proxy, so a new
               score can take a few hours to show on github.com.
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="track">
-            <AccordionTrigger>Does the badge track my visitors?</AccordionTrigger>
-            <AccordionContent>
+            </dd>
+          </div>
+          <div className="grid gap-2 py-6 md:grid-cols-[1fr_1.4fr] md:gap-10">
+            <dt className="font-semibold tracking-tight">Does the badge track my visitors?</dt>
+            <dd className="text-text-muted leading-relaxed">
               No. It is a static SVG with no cookies or scripts, and GitHub serves it through its
               own image proxy, so we never see who views your README. See the{' '}
               <Link href="/legal/privacy" className="underline underline-offset-2">
                 privacy policy
               </Link>
               .
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="low">
-            <AccordionTrigger>My score is lower than I expected. What can I do?</AccordionTrigger>
-            <AccordionContent>
+            </dd>
+          </div>
+          <div className="grid gap-2 py-6 md:grid-cols-[1fr_1.4fr] md:gap-10">
+            <dt className="font-semibold tracking-tight">
+              My score is lower than I expected. What can I do?
+            </dt>
+            <dd className="text-text-muted leading-relaxed">
               The{' '}
               <Link href="/trust-score" className="underline underline-offset-2">
                 Trust Score methodology
               </Link>{' '}
               lists every signal and its weight — each one is something a maintainer can improve. If
               you think the data is wrong, use the report link on your server&apos;s page.
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="buy">
-            <AccordionTrigger>Can I pay to raise my score?</AccordionTrigger>
-            <AccordionContent>
+            </dd>
+          </div>
+          <div className="grid gap-2 py-6 md:grid-cols-[1fr_1.4fr] md:gap-10">
+            <dt className="font-semibold tracking-tight">Can I pay to raise my score?</dt>
+            <dd className="text-text-muted leading-relaxed">
               No. Scores and rankings cannot be bought. Paid{' '}
               <Link href="/spotlight" className="underline underline-offset-2">
                 Spotlight
               </Link>{' '}
               placements are separate, always labelled as sponsored, and have no effect on the
               score.
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+            </dd>
+          </div>
+        </dl>
       </section>
     </main>
   );
