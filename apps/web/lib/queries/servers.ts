@@ -439,3 +439,64 @@ export async function getTrustedServers(limit = 6): Promise<ServerSummaryRow[]> 
     .orderBy(desc(servers.trustTotal), desc(servers.githubStars))
     .limit(limit);
 }
+
+/** Aggregate facts about the whole index, for the homepage. */
+export interface IndexInsights {
+  total: number;
+  averageScore: number;
+  scanned: number;
+  trusted: number;
+  activeThisMonth: number;
+  /** Server counts per 10-point Trust Score bucket: 0–9, 10–19, … 90–100. */
+  distribution: number[];
+}
+
+/**
+ * The index at a glance: one round trip, all aggregates computed in Postgres.
+ *
+ * The Trusted count uses the same rule as `computeAwards` (and
+ * `getTrustedServers`), so the homepage can never disagree with the badges.
+ */
+export async function getIndexInsights(): Promise<IndexInsights> {
+  const db = getDatabase();
+  const trustedCutoff = new Date(
+    Date.now() - AWARD_THRESHOLDS.trustedMaxCommitAgeDays * 86_400_000,
+  ).toISOString();
+  const activeCutoff = new Date(Date.now() - 30 * 86_400_000).toISOString();
+
+  const [row] = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      averageScore: sql<number>`coalesce(round(avg(${servers.trustTotal})), 0)::int`,
+      scanned: sql<number>`count(*) filter (where (${servers.security}->>'scanned')::boolean)::int`,
+      trusted: sql<number>`count(*) filter (where ${servers.trustTotal} >= ${AWARD_THRESHOLDS.trustedMinScore}
+        and ${scanCleanSql}
+        and ${servers.lastCommitAt} >= ${trustedCutoff}::timestamptz
+        and coalesce(${servers.license}, '') <> '')::int`,
+      activeThisMonth: sql<number>`count(*) filter (where ${servers.lastCommitAt} >= ${activeCutoff}::timestamptz)::int`,
+      distribution: sql<number[]>`array(
+        select coalesce(c, 0)::int
+        from generate_series(0, 9) as b
+        left join (
+          select least(${servers.trustTotal} / 10, 9) as bucket, count(*) as c
+          from ${servers}
+          where ${servers.deprecated} = false
+          group by 1
+        ) d on d.bucket = b
+        order by b
+      )`,
+    })
+    .from(servers)
+    .where(eq(servers.deprecated, false));
+
+  return (
+    row ?? {
+      total: 0,
+      averageScore: 0,
+      scanned: 0,
+      trusted: 0,
+      activeThisMonth: 0,
+      distribution: Array.from({ length: 10 }, () => 0),
+    }
+  );
+}
