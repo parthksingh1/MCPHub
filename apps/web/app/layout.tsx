@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Suspense } from 'react';
@@ -92,6 +94,12 @@ export default function RootLayout({
             <AuthNotice />
           </Suspense>
         </ThemeProvider>
+
+        {/* Cookieless page views and Core Web Vitals, viewed in the Vercel
+            dashboard. Both scripts are served from this origin, so the CSP
+            needs no extra hosts, and they no-op outside Vercel. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
