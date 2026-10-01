@@ -1,17 +1,5 @@
 import { CACHE_TTL, CATEGORY_LABELS } from '@mcphub/shared';
-import {
-  Activity,
-  ArrowRight,
-  Award,
-  Boxes,
-  LayoutGrid,
-  MonitorSmartphone,
-  Search,
-  ShieldCheck,
-  Star,
-  Terminal,
-  TrendingUp,
-} from 'lucide-react';
+import { Activity, ArrowRight, Award, Search, ShieldCheck, Star, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 import { HeroPanel } from '@/components/hero-panel';
@@ -232,41 +220,15 @@ export default async function HomePage(): Promise<React.JSX.Element> {
               </Link>
             </div>
 
-            <dl className="mt-10 grid max-w-xl grid-cols-3 gap-3">
+            <dl className="mt-10 flex max-w-xl divide-x border-y">
               {[
-                {
-                  label: 'Servers',
-                  value: stats.totalServers,
-                  icon: Boxes,
-                  tone: 'text-emerald-600 dark:text-emerald-400',
-                },
-                {
-                  label: 'Categories',
-                  value: stats.totalCategories,
-                  icon: LayoutGrid,
-                  tone: 'text-sky-600 dark:text-sky-400',
-                },
-                {
-                  label: 'Clients',
-                  value: stats.totalClients,
-                  icon: MonitorSmartphone,
-                  tone: 'text-amber-600 dark:text-amber-400',
-                },
+                { label: 'servers indexed', value: stats.totalServers },
+                { label: 'categories', value: stats.totalCategories },
+                { label: 'AI clients', value: stats.totalClients },
               ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-surface/70 flex flex-col rounded-xl border p-3 backdrop-blur"
-                >
-                  <span
-                    className={cn(
-                      'bg-surface-hover flex size-7 items-center justify-center rounded-lg',
-                      stat.tone,
-                    )}
-                  >
-                    <stat.icon className="size-4" aria-hidden />
-                  </span>
-                  <dt className="text-text-muted order-last text-xs">{stat.label}</dt>
-                  <dd className="text-foreground mt-2 font-mono text-xl font-semibold tabular-nums tracking-tight">
+                <div key={stat.label} className="flex flex-1 flex-col px-4 py-4 first:pl-0">
+                  <dt className="text-text-muted order-last mt-1 text-sm">{stat.label}</dt>
+                  <dd className="text-foreground text-2xl font-semibold tabular-nums tracking-tight">
                     {stat.value.toLocaleString()}
                   </dd>
                 </div>
@@ -311,33 +273,25 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           <McpFlow servers={trusted.length >= 5 ? trusted : featured} />
         </div>
 
-        <ol className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-3">
+        <ol className="mx-auto mt-14 grid max-w-5xl gap-x-12 gap-y-8 border-t pt-10 sm:grid-cols-3">
           {[
             {
-              icon: Search,
               title: 'Find',
               text: `Search ${stats.totalServers.toLocaleString()} servers by what they connect to.`,
             },
             {
-              icon: ShieldCheck,
               title: 'Check',
-              text: 'Every server is scored, security-scanned and badged — in the open.',
+              text: 'Every server is scored, security-scanned and badged, in the open.',
             },
             {
-              icon: Terminal,
               title: 'Install',
               text: 'Copy a ready-made config for Claude, Cursor, VS Code and more.',
             },
           ].map((step, index) => (
-            <li key={step.title} className="bg-surface rounded-2xl border p-5">
-              <div className="flex items-center gap-3">
-                <span className="bg-surface-hover flex size-9 items-center justify-center rounded-xl border">
-                  <step.icon className="size-4" aria-hidden />
-                </span>
-                <span className="text-text-muted font-mono text-xs">0{index + 1}</span>
-                <span className="font-semibold">{step.title}</span>
-              </div>
-              <p className="text-text-muted mt-3 text-sm leading-relaxed">{step.text}</p>
+            <li key={step.title}>
+              <span className="text-accent font-mono text-sm tabular-nums">0{index + 1}</span>
+              <h3 className="mt-2 text-lg font-semibold tracking-tight">{step.title}</h3>
+              <p className="text-text-muted mt-1.5 max-w-[34ch] leading-relaxed">{step.text}</p>
             </li>
           ))}
         </ol>
@@ -379,30 +333,31 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           linkLabel="All collections"
         />
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {COLLECTIONS.slice(0, 4).map((collection) => (
-            <Link
-              key={collection.slug}
-              href={`/collections/${collection.slug}`}
-              className="bg-surface hover:border-hover group flex flex-col rounded-2xl border p-5 transition-colors"
-            >
-              <span className="bg-surface-hover flex size-10 items-center justify-center rounded-xl border">
-                <collection.icon className="size-5" aria-hidden />
-              </span>
-              <h3 className="mt-4 font-semibold tracking-tight">{collection.title}</h3>
-              <p className="text-text-muted mt-1 flex-1 text-sm leading-relaxed">
-                {collection.tagline}
-              </p>
-              <span className="text-foreground mt-4 inline-flex items-center gap-1 text-sm font-medium">
-                Explore
-                <ArrowRight
-                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
+        <ul className="mt-8 grid border-t sm:grid-cols-2 sm:gap-x-12">
+          {COLLECTIONS.slice(0, 6).map((collection) => (
+            <li key={collection.slug} className="border-b">
+              <Link
+                href={`/collections/${collection.slug}`}
+                className="group flex items-center gap-4 py-5"
+              >
+                <collection.icon
+                  className="text-text-muted group-hover:text-accent size-5 shrink-0 transition-colors"
                   aria-hidden
                 />
-              </span>
-            </Link>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold tracking-tight">{collection.title}</span>
+                  <span className="text-text-muted block truncate text-sm">
+                    {collection.tagline}
+                  </span>
+                </span>
+                <ArrowRight
+                  className="text-text-muted group-hover:text-foreground size-4 shrink-0 transition-[transform,color] duration-200 group-hover:translate-x-1"
+                  aria-hidden
+                />
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* ── Categories ───────────────────────────────────────────────────── */}
@@ -449,7 +404,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
 
       {/* ── Trust Score explainer ────────────────────────────────────────── */}
       <section className="container py-16">
-        <div className="bg-surface halo relative overflow-hidden rounded-3xl border p-8 sm:p-12">
+        <div className="bg-surface relative overflow-hidden rounded-3xl border p-8 sm:p-12">
           <div className="relative grid gap-12 lg:grid-cols-[1fr_1.3fr]">
             <div>
               <p className="eyebrow">Open algorithm</p>
@@ -468,22 +423,17 @@ export default async function HomePage(): Promise<React.JSX.Element> {
               </Button>
             </div>
 
-            <dl className="grid gap-4 sm:grid-cols-2">
+            <dl className="divide-y self-center border-y">
               {TRUST_PARTS.map((part) => (
-                <div key={part.name} className="bg-background/60 rounded-2xl border p-5">
-                  <dt className="flex items-center gap-3">
-                    <span
-                      className={cn(
-                        'bg-surface-hover flex size-9 items-center justify-center rounded-lg',
-                        part.tone,
-                      )}
-                    >
-                      <part.icon className="size-4" aria-hidden />
-                    </span>
-                    <span className="font-semibold tracking-tight">{part.name}</span>
-                    <span className="text-text-muted ml-auto font-mono text-xs">25 pts</span>
+                <div key={part.name} className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 py-4">
+                  <dt className="flex items-center gap-2.5 font-semibold tracking-tight">
+                    <part.icon className={cn('size-4', part.tone)} aria-hidden />
+                    {part.name}
                   </dt>
-                  <dd className="text-text-muted mt-3 text-sm leading-relaxed">{part.detail}</dd>
+                  <span className="text-text-muted font-mono text-sm tabular-nums">25 pts</span>
+                  <dd className="text-text-muted col-span-2 text-sm leading-relaxed">
+                    {part.detail}
+                  </dd>
                 </div>
               ))}
             </dl>
