@@ -53,9 +53,9 @@ export function McpFlow({ servers }: { servers: FlowServer[] }): React.JSX.Eleme
             x2="1000"
             y2="0"
           >
-            <stop offset="0" stopColor="hsl(var(--accent))" />
-            <stop offset="0.5" stopColor="hsl(var(--accent-to))" />
-            <stop offset="1" stopColor="#6366f1" />
+            <stop offset="0" stopColor="hsl(var(--accent))" stopOpacity="0.55" />
+            <stop offset="0.5" stopColor="hsl(var(--accent))" />
+            <stop offset="1" stopColor="hsl(var(--accent))" stopOpacity="0.55" />
           </linearGradient>
         </defs>
         {ROWS.map((y, index) => (

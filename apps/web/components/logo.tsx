@@ -34,9 +34,7 @@ export function Logo({ className }: LogoProps): React.JSX.Element {
       <LogoMark className="size-9" />
       <span className="text-[17px] font-bold leading-none tracking-tight">
         MCP
-        <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
-          Hub
-        </span>
+        <span className="text-text-muted">Hub</span>
       </span>
     </span>
   );
