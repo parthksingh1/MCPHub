@@ -1,91 +1,62 @@
 import { CACHE_TTL, CATEGORY_LABELS } from '@mcphub/shared';
-import { Activity, ArrowRight, Award, Search, ShieldCheck, Star, TrendingUp } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import Link from 'next/link';
 
-import { BadgeShowcase } from '@/components/badge-showcase';
-import { HeroPanel } from '@/components/hero-panel';
-import { IndexInsights } from '@/components/index-insights';
-import { InstallDemo } from '@/components/install-demo';
+import { FeatureBento } from '@/components/feature-bento';
+import { Leaderboard } from '@/components/leaderboard';
 import { McpFlow } from '@/components/mcp-flow';
 import { Medal } from '@/components/medal';
-import { ServerCard } from '@/components/server-card';
+import { ProductPreview } from '@/components/product-preview';
 import { ServerMarquee } from '@/components/server-marquee';
 import { SponsoredStrip } from '@/components/sponsored-strip';
 import { Button } from '@/components/ui/button';
 import { cacheKey, cached } from '@/lib/cache';
 import { CATEGORY_ICON } from '@/lib/category-icons';
-import { CATEGORY_STYLE } from '@/lib/category-style';
 import { COLLECTIONS } from '@/lib/collections';
 import { formatRelativeTime } from '@/lib/format';
 import {
   getCategoryCounts,
   getFeaturedServers,
+  getIndexInsights,
   getSiteStats,
   getTopServers,
   getTrustedServers,
-  getIndexInsights,
 } from '@/lib/queries/servers';
 import { getActiveSponsors } from '@/lib/queries/spotlight';
 import { safeQuery } from '@/lib/safe-query';
 import { SPOTLIGHT_STRIP_SLOTS } from '@/lib/spotlight';
-import { cn } from '@/lib/utils';
 
 /** Regenerate at most once a minute; the homepage is mostly aggregate data. */
 export const revalidate = 60;
 
-/** The four Trust Score components, each with its own colour and icon. */
-const TRUST_PARTS = [
-  {
-    name: 'Maintenance',
-    detail: 'Commit and release recency. Is anyone still looking after it?',
-    icon: Activity,
-    tone: 'text-sky-600 dark:text-sky-400',
-  },
-  {
-    name: 'Popularity',
-    detail: 'Stars on a log scale, so small projects still register.',
-    icon: Star,
-    tone: 'text-amber-600 dark:text-amber-400',
-  },
-  {
-    name: 'Security',
-    detail: 'A purpose-built Semgrep ruleset, plus a dependency audit.',
-    icon: ShieldCheck,
-    tone: 'text-emerald-600 dark:text-emerald-400',
-  },
-  {
-    name: 'Quality',
-    detail: 'README, licence, types, tests, CI — the marks of care.',
-    icon: Award,
-    tone: 'text-rose-600 dark:text-rose-400',
-  },
-] as const;
-
-/** A monospace eyebrow above a section heading. */
+/** A section heading: eyebrow, a large statement, and an optional link. */
 function SectionHeading({
   eyebrow,
   title,
-  detail,
+  muted,
   href,
   linkLabel,
 }: {
   eyebrow: string;
   title: string;
-  detail: string;
+  /** Trailing words set in the muted tone, Ramp-style two-tone headline. */
+  muted?: string;
   href?: string;
   linkLabel?: string;
 }): React.JSX.Element {
   return (
-    <div className="flex items-end justify-between gap-6">
-      <div>
+    <div className="flex flex-wrap items-end justify-between gap-6">
+      <div className="max-w-2xl">
         <p className="eyebrow">{eyebrow}</p>
-        <h2 className="text-section-title mt-2 font-semibold">{title}</h2>
-        <p className="text-text-muted mt-1.5 text-sm">{detail}</p>
+        <h2 className="text-statement mt-3 text-balance">
+          {title}
+          {muted && <span className="text-text-muted"> {muted}</span>}
+        </h2>
       </div>
       {href && linkLabel && (
         <Link
           href={href}
-          className="text-text-muted hover:text-foreground group hidden shrink-0 items-center gap-1 text-sm transition-colors sm:inline-flex"
+          className="text-text-secondary hover:text-foreground group inline-flex shrink-0 items-center gap-1 text-sm font-medium transition-colors"
         >
           {linkLabel}
           <ArrowRight
@@ -141,399 +112,255 @@ export default async function HomePage(): Promise<React.JSX.Element> {
     ),
   ]);
 
-  const topCategories = [...categories].sort((a, b) => b.count - a.count).slice(0, 8);
+  const topCategories = [...categories].sort((a, b) => b.count - a.count);
 
   return (
     <main className="relative">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="container relative pb-16 pt-14 sm:pt-20">
-        {/* Brand glow behind the headline: emerald and cyan, never purple. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 h-[420px] w-[min(900px,100%)] -translate-x-1/2 rounded-full opacity-60 blur-3xl"
-          style={{
-            background:
-              'radial-gradient(closest-side, hsl(var(--accent) / 0.22), transparent), radial-gradient(closest-side at 70% 40%, hsl(var(--accent-to) / 0.2), transparent)',
-          }}
-        />
+      <section className="container relative pb-8 pt-16 sm:pt-24">
+        <div className="animate-fade-up mx-auto flex max-w-4xl flex-col items-center text-center">
+          {/* Live status pill — proof the index is alive, above the fold. */}
+          <Link
+            href="/rankings?view=new"
+            className="bg-surface/80 text-text-secondary hover:border-hover inline-flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs backdrop-blur transition-colors"
+          >
+            <span className="bg-accent/10 text-accent inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium">
+              <span className="bg-accent size-1.5 animate-pulse rounded-full" aria-hidden />
+              Live
+            </span>
+            <span className="tabular-nums">
+              {stats.totalServers.toLocaleString()} servers indexed
+            </span>
+            <span className="text-text-muted" aria-hidden>
+              ·
+            </span>
+            <span className="text-text-muted">
+              updated {formatRelativeTime(stats.lastIndexedAt)}
+            </span>
+          </Link>
 
-        <div className="relative grid grid-cols-1 items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
-          <div className="animate-fade-up min-w-0">
-            {/* Live status pill — proof the index is alive, above the fold. */}
-            <Link
-              href="/rankings?view=new"
-              className="bg-surface/80 text-text-secondary hover:border-hover inline-flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs shadow-sm backdrop-blur transition-colors"
-            >
-              <span className="bg-success/15 text-success rounded-full px-2 py-0.5 font-semibold">
-                Live
-              </span>
-              <span className="tabular-nums">
-                {stats.totalServers.toLocaleString()} servers indexed
-              </span>
-              <span className="text-text-muted" aria-hidden>
-                ·
-              </span>
-              <span className="text-text-muted">
-                updated {formatRelativeTime(stats.lastIndexedAt)}
-              </span>
-            </Link>
+          <h1 className="text-display tracking-display mt-8 text-balance">
+            The trusted directory <span className="text-text-muted">for MCP servers</span>
+          </h1>
 
-            <h1 className="text-display tracking-display mt-7 max-w-[13ch] text-balance">
-              The trusted directory for <span className="text-gradient">MCP servers</span>.
-            </h1>
-
-            <p className="text-text-secondary mt-6 max-w-[46ch] text-lg leading-relaxed">
-              Smithery lists them. MCPHub rates, scans, and vets them — so you know exactly what you
-              are installing before you run it.
-            </p>
-
-            {/* A real form: search works before JavaScript loads. */}
-            <form action="/servers" method="get" role="search" className="mt-8 max-w-xl">
-              <label htmlFor="hero-search" className="sr-only">
-                Search MCP servers
-              </label>
-              <div className="bg-surface focus-within:border-hover flex items-center gap-2 rounded-2xl border p-1.5 pl-4 shadow-sm transition-colors focus-within:ring-2">
-                <Search className="text-text-muted size-5 shrink-0" aria-hidden />
-                <input
-                  id="hero-search"
-                  name="q"
-                  type="search"
-                  placeholder="Search GitHub, Postgres, Slack, browser…"
-                  autoComplete="off"
-                  className="placeholder:text-text-muted h-11 min-w-0 flex-1 bg-transparent text-base outline-none"
-                />
-                <button
-                  type="submit"
-                  className="bg-brand inline-flex h-11 shrink-0 items-center rounded-xl px-5 text-sm font-semibold shadow-sm transition-opacity hover:opacity-90"
-                >
-                  Search
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-              <Link
-                href="/servers"
-                className="text-foreground group inline-flex items-center gap-1 font-medium"
-              >
-                Browse all servers
-                <ArrowRight
-                  className="size-4 transition-transform group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              </Link>
-              <Link href="/submit" className="text-text-muted hover:text-foreground">
-                Submit yours
-              </Link>
-            </div>
-
-            <dl className="mt-10 flex max-w-xl divide-x border-y">
-              {[
-                { label: 'servers indexed', value: stats.totalServers },
-                { label: 'categories', value: stats.totalCategories },
-                { label: 'AI clients', value: stats.totalClients },
-              ].map((stat) => (
-                <div key={stat.label} className="flex flex-1 flex-col px-4 py-4 first:pl-0">
-                  <dt className="text-text-muted order-last mt-1 text-sm">{stat.label}</dt>
-                  <dd className="text-foreground text-2xl font-semibold tabular-nums tracking-tight">
-                    {stat.value.toLocaleString()}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          {featured.length > 0 && (
-            <HeroPanel
-              servers={featured.map((server) => ({
-                slug: server.slug,
-                name: server.name,
-                authorName: server.authorName,
-                trustTotal: server.trustTotal,
-              }))}
-            />
-          )}
-        </div>
-      </section>
-
-      {/* ── Marquee: real servers, gliding past ─────────────────────────── */}
-      <div className="border-y">
-        <div className="container">
-          <ServerMarquee servers={marquee} total={stats.totalServers} />
-        </div>
-      </div>
-
-      {/* ── How it works: animated beam ──────────────────────────────────── */}
-      <section className="container py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">How it works</p>
-          <h2 className="text-section-title mt-2 font-semibold">
-            One hub between your AI and every tool
-          </h2>
-          <p className="text-text-muted mt-3 leading-relaxed">
-            Your AI client speaks MCP. MCPHub tells you which servers are safe to plug into it —
-            before you run a single line of someone else&apos;s code.
+          <p className="text-text-secondary mt-6 max-w-[52ch] text-lg leading-relaxed sm:text-xl">
+            Every server scored, security-scanned and ranked in the open — so you know exactly what
+            you&apos;re installing before you run it.
           </p>
+
+          {/* A real form: search works before JavaScript loads. */}
+          <form action="/servers" method="get" role="search" className="mt-10 w-full max-w-xl">
+            <label htmlFor="hero-search" className="sr-only">
+              Search MCP servers
+            </label>
+            <div className="bg-surface focus-within:border-hover shadow-tile flex items-center gap-2 rounded-2xl border p-1.5 pl-4 transition-colors focus-within:ring-2">
+              <Search className="text-text-muted size-5 shrink-0" aria-hidden />
+              <input
+                id="hero-search"
+                name="q"
+                type="search"
+                placeholder="Search GitHub, Postgres, Slack, browser…"
+                autoComplete="off"
+                className="placeholder:text-text-muted h-11 min-w-0 flex-1 bg-transparent text-base outline-none"
+              />
+              <button
+                type="submit"
+                className="bg-primary text-primary-foreground inline-flex h-11 shrink-0 items-center rounded-xl px-5 text-sm font-semibold transition-[opacity,transform] hover:opacity-90 active:translate-y-px active:scale-[0.98]"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+            <Link
+              href="/servers"
+              className="text-foreground group inline-flex items-center gap-1 font-medium"
+            >
+              Browse all servers
+              <ArrowRight
+                className="size-4 transition-transform group-hover:translate-x-0.5"
+                aria-hidden
+              />
+            </Link>
+            <Link
+              href="/submit"
+              className="text-text-muted hover:text-foreground transition-colors"
+            >
+              Submit your server
+            </Link>
+          </div>
         </div>
 
-        <div className="mt-12">
-          <McpFlow servers={trusted.length >= 5 ? trusted : featured} />
-        </div>
-
-        <ol className="mx-auto mt-14 grid max-w-5xl gap-x-12 gap-y-8 border-t pt-10 sm:grid-cols-3">
-          {[
-            {
-              title: 'Find',
-              text: `Search ${stats.totalServers.toLocaleString()} servers by what they connect to.`,
-            },
-            {
-              title: 'Check',
-              text: 'Every server is scored, security-scanned and badged, in the open.',
-            },
-            {
-              title: 'Install',
-              text: 'Copy a ready-made config for Claude, Cursor, VS Code and more.',
-            },
-          ].map((step, index) => (
-            <li key={step.title}>
-              <span className="text-accent font-mono text-sm tabular-nums">0{index + 1}</span>
-              <h3 className="mt-2 text-lg font-semibold tracking-tight">{step.title}</h3>
-              <p className="text-text-muted mt-1.5 max-w-[34ch] leading-relaxed">{step.text}</p>
-            </li>
-          ))}
-        </ol>
+        {featured.length > 0 && (
+          <div className="animate-fade-up mx-auto mt-16 max-w-5xl [animation-delay:120ms] sm:mt-20">
+            <ProductPreview
+              servers={featured}
+              categories={topCategories}
+              total={stats.totalServers}
+            />
+          </div>
+        )}
       </section>
+
+      {/* ── Logo wall: real servers, gliding past ───────────────────────── */}
+      <div className="container">
+        <ServerMarquee servers={marquee} total={stats.totalServers} />
+      </div>
 
       {/* ── Sponsored (Spotlight) — labelled, separate from every ranking ── */}
       {sponsors.length > 0 && (
-        <div className="container pb-12">
+        <div className="container pb-4 pt-8">
           <SponsoredStrip sponsors={sponsors.slice(0, SPOTLIGHT_STRIP_SLOTS)} />
         </div>
       )}
 
+      <FeatureBento insights={insights} />
+
+      {/* ── How it works ─────────────────────────────────────────────────── */}
+      <section className="container py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="eyebrow">How it works</p>
+          <h2 className="text-statement mt-3 text-balance">
+            One hub between your AI <span className="text-text-muted">and every tool.</span>
+          </h2>
+          <p className="text-text-secondary mx-auto mt-5 max-w-[52ch] text-lg leading-relaxed">
+            Your AI client speaks MCP. MCPHub tells you which servers are safe to plug into it.
+          </p>
+        </div>
+        <div className="mt-14 hidden md:block">
+          <McpFlow servers={trusted.length >= 5 ? trusted : featured} />
+        </div>
+      </section>
+
       {/* ── Highest rated ────────────────────────────────────────────────── */}
       {featured.length > 0 && (
-        <section className="container py-16">
+        <section className="container py-24">
           <SectionHeading
             eyebrow="Ranked by Trust Score"
             title="Highest rated"
-            detail="Scoring best across maintenance, popularity, security, and quality."
+            muted="right now."
             href="/rankings"
             linkLabel="Full rankings"
           />
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((server, index) => (
-              <ServerCard key={server.id} server={server} index={index} />
-            ))}
+          <div className="mt-10">
+            <Leaderboard servers={featured} />
           </div>
         </section>
       )}
 
-      {insights && <IndexInsights insights={insights} />}
+      {/* ── Browse: by job or by tool ────────────────────────────────────── */}
+      <section className="container py-24">
+        <SectionHeading eyebrow="Browse" title="Start from the job" muted="or the tool." />
 
-      {/* ── Collections ──────────────────────────────────────────────────── */}
-      <section className="container py-16">
-        <SectionHeading
-          eyebrow="Curated"
-          title="Collections"
-          detail="The best servers for common jobs, ranked by Trust Score and updated daily."
-          href="/collections"
-          linkLabel="All collections"
-        />
-
-        <ul className="mt-8 grid grid-cols-1 border-t sm:grid-cols-2 sm:gap-x-12">
-          {COLLECTIONS.slice(0, 6).map((collection) => (
-            <li key={collection.slug} className="border-b">
+        <div className="mt-12 grid grid-cols-1 gap-x-16 gap-y-12 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <div className="flex items-baseline justify-between">
+              <h3 className="font-semibold tracking-tight">Collections</h3>
               <Link
-                href={`/collections/${collection.slug}`}
-                className="group flex items-center gap-4 py-5"
+                href="/collections"
+                className="text-text-muted hover:text-foreground text-sm transition-colors"
               >
-                <collection.icon
-                  className="text-text-muted group-hover:text-accent size-5 shrink-0 transition-colors"
-                  aria-hidden
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold tracking-tight">{collection.title}</span>
-                  <span className="text-text-muted block truncate text-sm">
-                    {collection.tagline}
-                  </span>
-                </span>
-                <ArrowRight
-                  className="text-text-muted group-hover:text-foreground size-4 shrink-0 transition-[transform,color] duration-200 group-hover:translate-x-1"
-                  aria-hidden
-                />
+                View all
               </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ── Categories ───────────────────────────────────────────────────── */}
-      <section className="container py-16">
-        <SectionHeading
-          eyebrow="By integration"
-          title="Browse by category"
-          detail="Find a server for the tool you already use."
-          href="/categories"
-          linkLabel="All categories"
-        />
-
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {topCategories.map((category) => {
-            const Icon = CATEGORY_ICON[category.slug];
-
-            return (
-              <Link
-                key={category.slug}
-                href={`/categories/${category.slug}`}
-                className="bg-surface hover:border-hover hover:shadow-card-hover group relative flex items-center gap-3 rounded-2xl border p-4 transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-0.5"
-              >
-                <span
-                  className={cn(
-                    'flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset',
-                    CATEGORY_STYLE[category.slug].tile,
-                  )}
-                >
-                  <Icon className="size-5" aria-hidden />
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold tracking-tight">
-                    {CATEGORY_LABELS[category.slug]}
-                  </span>
-                  <span className="text-text-muted block text-xs tabular-nums">
-                    {category.count.toLocaleString()} servers
-                  </span>
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── Trust Score explainer ────────────────────────────────────────── */}
-      <section className="container py-16">
-        <div className="bg-surface relative overflow-hidden rounded-3xl border p-8 sm:p-12">
-          <div className="relative grid gap-12 lg:grid-cols-[1fr_1.3fr]">
-            <div>
-              <p className="eyebrow">Open algorithm</p>
-              <h2 className="text-section-title mt-2 max-w-[16ch] font-semibold">
-                Every server gets one <span className="text-gradient">honest number</span>.
-              </h2>
-              <p className="text-text-secondary mt-4 max-w-prose text-sm leading-relaxed">
-                Four equally weighted components, 25 points each. Deterministic, open source, and
-                covered by tests at 100%. You can read it, run it, and disagree with it.
-              </p>
-              <Button asChild className="mt-7">
-                <Link href="/trust-score">
-                  Read the full breakdown
-                  <ArrowRight className="size-4" />
-                </Link>
-              </Button>
             </div>
-
-            <dl className="divide-y self-center border-y">
-              {TRUST_PARTS.map((part) => (
-                <div key={part.name} className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 py-4">
-                  <dt className="flex items-center gap-2.5 font-semibold tracking-tight">
-                    <part.icon className={cn('size-4', part.tone)} aria-hidden />
-                    {part.name}
-                  </dt>
-                  <span className="text-text-muted font-mono text-sm tabular-nums">25 pts</span>
-                  <dd className="text-text-muted col-span-2 text-sm leading-relaxed">
-                    {part.detail}
-                  </dd>
-                </div>
+            <ul className="mt-4 border-t">
+              {COLLECTIONS.slice(0, 6).map((collection) => (
+                <li key={collection.slug} className="border-b">
+                  <Link
+                    href={`/collections/${collection.slug}`}
+                    className="group flex items-center gap-4 py-4"
+                  >
+                    <collection.icon
+                      className="text-text-muted group-hover:text-accent size-5 shrink-0 transition-colors"
+                      aria-hidden
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-medium tracking-tight">{collection.title}</span>
+                      <span className="text-text-muted block truncate text-sm">
+                        {collection.tagline}
+                      </span>
+                    </span>
+                    <ArrowRight
+                      className="text-text-muted group-hover:text-foreground size-4 shrink-0 transition-[transform,color] duration-200 group-hover:translate-x-1"
+                      aria-hidden
+                    />
+                  </Link>
+                </li>
               ))}
-            </dl>
+            </ul>
+          </div>
+
+          <div>
+            <div className="flex items-baseline justify-between">
+              <h3 className="font-semibold tracking-tight">Categories</h3>
+              <Link
+                href="/categories"
+                className="text-text-muted hover:text-foreground text-sm transition-colors"
+              >
+                View all
+              </Link>
+            </div>
+            <ul className="mt-4 grid grid-cols-1 border-t sm:grid-cols-2 sm:gap-x-8 lg:grid-cols-1">
+              {topCategories.slice(0, 8).map((category) => {
+                const Icon = CATEGORY_ICON[category.slug];
+
+                return (
+                  <li key={category.slug} className="border-b">
+                    <Link
+                      href={`/categories/${category.slug}`}
+                      className="group flex items-center gap-3 py-3"
+                    >
+                      <Icon
+                        className="text-text-muted group-hover:text-accent size-4 shrink-0 transition-colors"
+                        aria-hidden
+                      />
+                      <span className="flex-1 truncate text-[15px] font-medium tracking-tight">
+                        {CATEGORY_LABELS[category.slug]}
+                      </span>
+                      <span className="text-text-muted text-sm tabular-nums">
+                        {category.count.toLocaleString()}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
       </section>
 
-      <InstallDemo />
-
-      {/* ── MCPHub Trusted showcase ─────────────────────────────────────── */}
-      {trusted.length > 0 && (
-        <section className="container py-16">
-          <div className="bg-surface relative overflow-hidden rounded-3xl border p-6 sm:p-10">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(520px 280px at 12% 0%, rgba(234,179,8,0.12), transparent 70%), radial-gradient(520px 280px at 100% 0%, hsl(var(--accent) / 0.1), transparent 70%)',
-              }}
-            />
-            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-5">
-                <Medal award="trusted" size={84} className="shrink-0" />
-                <div>
-                  <p className="eyebrow">The top honour</p>
-                  <h2 className="text-section-title mt-1 font-semibold">MCPHub Trusted</h2>
-                  <p className="text-text-muted mt-1.5 max-w-lg text-sm leading-relaxed">
-                    High Trust Score, a clean security scan, active maintenance and a proper licence
-                    — all four, checked daily.
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/badges#awards"
-                className="text-foreground group inline-flex shrink-0 items-center gap-1 text-sm font-medium"
-              >
-                How badges work
-                <ArrowRight
-                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              </Link>
-            </div>
-
-            <div className="relative mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {trusted.map((server, index) => (
-                <ServerCard key={server.id} server={server} index={index} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <BadgeShowcase />
-
-      {/* ── Maintainer call to action ────────────────────────────────────── */}
-      <section className="container pb-8 pt-8">
-        <div className="bg-surface relative overflow-hidden rounded-3xl border p-8 sm:p-12">
+      {/* ── Closing call to action ───────────────────────────────────────── */}
+      <section className="container pb-8 pt-16">
+        <div className="bg-surface shadow-tile relative overflow-hidden rounded-3xl border px-6 py-16 text-center sm:px-12 sm:py-20">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-full"
             style={{
               background:
-                'radial-gradient(600px 260px at 0% 0%, hsl(var(--accent) / 0.16), transparent 70%), radial-gradient(600px 260px at 100% 100%, hsl(var(--accent-to) / 0.16), transparent 70%)',
+                'radial-gradient(70% 90% at 50% 120%, hsl(var(--accent) / 0.18), transparent 70%)',
             }}
           />
-          <div className="relative flex flex-wrap items-center justify-between gap-8">
-            <div className="max-w-xl">
-              <p className="eyebrow">For maintainers</p>
-              <h2 className="text-section-title mt-2 font-semibold">
-                Built an MCP server? Get it scored.
-              </h2>
-              <p className="text-text-secondary mt-3 leading-relaxed">
-                Submit your repo, get a Trust Score and a security scan within a day, then show it
-                off with a live badge in your README.
-              </p>
+          <div className="relative mx-auto max-w-2xl">
+            <div className="flex justify-center" aria-hidden>
+              <Medal award="trusted" size={72} />
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/submit"
-                className="bg-brand inline-flex h-11 items-center gap-2 rounded-xl px-6 text-sm font-semibold shadow-sm transition-opacity hover:opacity-90"
-              >
-                Submit a server
-                <ArrowRight className="size-4" aria-hidden />
-              </Link>
-              <Button asChild size="lg" variant="secondary">
-                <Link href="/badges">
-                  <TrendingUp className="size-4" aria-hidden />
-                  Get a badge
+            <h2 className="text-statement mt-6 text-balance">
+              Built an MCP server? <span className="text-text-muted">Get it scored.</span>
+            </h2>
+            <p className="text-text-secondary mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed">
+              Submit your repo and get a Trust Score and security scan within a day — then show it
+              off with a live badge in your README.
+            </p>
+            <div className="mt-9 flex flex-wrap justify-center gap-3">
+              <Button asChild size="lg">
+                <Link href="/submit">
+                  Submit a server
+                  <ArrowRight className="size-4" aria-hidden />
                 </Link>
+              </Button>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/badges">Get a badge</Link>
               </Button>
             </div>
           </div>
