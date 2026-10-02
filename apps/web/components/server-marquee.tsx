@@ -1,9 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { TrustPill } from '@/components/trust-pill';
-import { cn } from '@/lib/utils';
-
 /** The slice of a server the marquee shows. */
 export interface MarqueeServer {
   slug: string;
@@ -12,59 +9,12 @@ export interface MarqueeServer {
   trustTotal: number;
 }
 
-/** One scrolling row. The list is rendered twice so the loop is seamless. */
-function Row({
-  servers,
-  reverse,
-}: {
-  servers: MarqueeServer[];
-  reverse?: boolean;
-}): React.JSX.Element {
-  return (
-    <div className="group flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-      <div
-        className={cn(
-          'animate-marquee flex w-max shrink-0 gap-3 pr-3 group-hover:[animation-play-state:paused] motion-reduce:animate-none',
-          reverse && '[animation-direction:reverse]',
-        )}
-        style={{ ['--marquee-duration' as string]: `${servers.length * 4}s` }}
-      >
-        {[...servers, ...servers].map((server, index) => (
-          <Link
-            key={`${server.slug}-${index}`}
-            href={`/servers/${server.slug}`}
-            // The second copy exists only for the visual loop.
-            aria-hidden={index >= servers.length}
-            tabIndex={index >= servers.length ? -1 : undefined}
-            className="bg-surface hover:border-hover flex items-center gap-2.5 rounded-xl border py-2 pl-2 pr-2.5 shadow-sm transition-colors"
-          >
-            {server.authorAvatar ? (
-              <Image
-                src={server.authorAvatar}
-                alt=""
-                width={28}
-                height={28}
-                className="size-7 rounded-lg border object-cover"
-              />
-            ) : (
-              <span className="bg-surface-hover text-text-muted flex size-7 items-center justify-center rounded-lg border font-mono text-xs uppercase">
-                {server.name.slice(0, 1)}
-              </span>
-            )}
-            <span className="max-w-[10rem] truncate text-sm font-medium">{server.name}</span>
-            <TrustPill score={server.trustTotal} className="h-6 px-2" />
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /**
- * Two rows of real top servers gliding past in opposite directions.
+ * A single, quiet row of real servers gliding past: the "trusted by" strip.
  *
- * Live social proof in the space under the hero: every tile is a real,
- * scored server and a link. Pauses on hover, stops for reduced motion.
+ * Deliberately monochrome — avatars are desaturated until hovered and there
+ * are no score pills — so it reads as a calm logo wall under the hero rather
+ * than a second, competing list. Pauses on hover, stops for reduced motion.
  */
 export function ServerMarquee({
   servers,
@@ -74,16 +24,46 @@ export function ServerMarquee({
   total: number;
 }): React.JSX.Element | null {
   if (servers.length < 8) return null;
-  const half = Math.ceil(servers.length / 2);
+  const row = servers.slice(0, 20);
 
   return (
-    <section aria-label="Popular MCP servers" className="py-6">
-      <p className="text-text-muted mb-5 text-center text-sm">
-        {total.toLocaleString()} servers indexed, from teams like these
+    <section aria-label="Popular MCP servers" className="py-10">
+      <p className="text-text-muted text-center text-sm">
+        Scoring {total.toLocaleString()} servers, from teams like these
       </p>
-      <div className="space-y-3">
-        <Row servers={servers.slice(0, half)} />
-        <Row servers={servers.slice(half)} reverse />
+      <div className="group mt-7 flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_14%,black_86%,transparent)]">
+        <div
+          className="animate-marquee flex w-max shrink-0 items-center gap-12 pr-12 group-hover:[animation-play-state:paused] motion-reduce:animate-none"
+          style={{ ['--marquee-duration' as string]: `${row.length * 3.5}s` }}
+        >
+          {[...row, ...row].map((server, index) => (
+            <Link
+              key={`${server.slug}-${index}`}
+              href={`/servers/${server.slug}`}
+              // The second copy exists only for the visual loop.
+              aria-hidden={index >= row.length}
+              tabIndex={index >= row.length ? -1 : undefined}
+              className="text-text-muted hover:text-foreground flex items-center gap-2.5 opacity-80 grayscale transition-[filter,opacity,color] duration-300 hover:opacity-100 hover:grayscale-0"
+            >
+              {server.authorAvatar ? (
+                <Image
+                  src={server.authorAvatar}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="size-6 rounded-md object-cover"
+                />
+              ) : (
+                <span className="bg-surface-hover flex size-6 items-center justify-center rounded-md font-mono text-[11px] uppercase">
+                  {server.name.slice(0, 1)}
+                </span>
+              )}
+              <span className="max-w-[11rem] truncate text-[15px] font-semibold tracking-tight">
+                {server.name}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
