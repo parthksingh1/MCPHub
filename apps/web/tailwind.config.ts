@@ -93,8 +93,13 @@ const config: Config = {
           { lineHeight: '0.98', letterSpacing: '-0.042em', fontWeight: '600' },
         ],
         'section-title': [
-          'clamp(1.5rem, 2.4vw, 2rem)',
-          { lineHeight: '1.15', letterSpacing: '-0.025em' },
+          'clamp(1.75rem, 3vw, 2.5rem)',
+          { lineHeight: '1.08', letterSpacing: '-0.032em' },
+        ],
+        // Big homepage section statements, one step below the display size.
+        statement: [
+          'clamp(2.1rem, 4.4vw, 3.5rem)',
+          { lineHeight: '1.04', letterSpacing: '-0.04em', fontWeight: '600' },
         ],
       },
       maxWidth: {
@@ -111,6 +116,11 @@ const config: Config = {
         glow: '0 0 0 1px var(--border-hover), 0 8px 24px -12px rgb(0 0 0 / 0.5)',
         'glow-sm': '0 0 24px -6px hsl(var(--accent) / 0.5)',
         ring: '0 0 28px -8px currentColor',
+        // Layered, low-contrast depth for the hero's product window.
+        window:
+          '0 0 0 1px var(--border), 0 2px 4px -2px rgb(0 0 0 / 0.08), 0 24px 48px -16px rgb(0 0 0 / 0.22), 0 64px 120px -40px rgb(0 0 0 / 0.3)',
+        // A whisper of lift for bento tiles: separation without heaviness.
+        tile: '0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 1px 2px 0 rgb(0 0 0 / 0.06)',
       },
       keyframes: {
         // Infinite logo marquee: the track holds two copies, so -50% loops seamlessly.
